@@ -12,7 +12,9 @@ animation as a GIF.
 ## What it's after
 
 The defaults are tuned to land near the sleeve of **Звезда по имени Солнце** ("A Star Called the
-Sun") — the sixth and final studio album KINO released before Viktor Tsoi died, out 29 August 1989.
+Sun"), released 29 August 1989 — the last KINO album to appear in Viktor Tsoi's lifetime. He died on
+15 August 1990, not quite a year later.
+
 Nothing here is traced from that cover: the sun is generated from scratch on every frame, and
 **Reset to cover** puts the defaults back after you have wandered off.
 
