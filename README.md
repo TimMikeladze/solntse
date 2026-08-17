@@ -42,25 +42,44 @@ Narrow, or system sans), plus size, letter tracking, line spacing and vertical p
 line and the title block independently.
 
 **Toggles** — `Caps` forces uppercase, `Gradient` shades the lava radially, `Liquid hole` makes the
-inner circle wobble instead of staying a perfect disc.
+inner circle wobble instead of staying a perfect disc, `Dither` applies Floyd–Steinberg error
+diffusion when writing a GIF.
 
 **Colours** — lava, ground (background), top text, title.
 
 ## Export
 
-**Export SVG** writes the current frame as vector: one path for the sun outline, one per sliver,
-a circle or path for the hole, and one `<text>` element per glyph at the exact tracked position.
-Gradient becomes a `<radialGradient>` and glow becomes an `<feDropShadow>`, so the file matches
-what is on screen. Non-system typefaces are pulled in with a Google Fonts `@import`, which means the
-SVG renders correctly in a browser but will fall back to a default sans in offline vector editors.
+Four exporters share the `Size` (up to 2160px), `Length` and `FPS` controls.
 
-**Export GIF** records the animation from the current moment forward. `Size`, `Length` and `FPS` set
-the output; 360px / 2s / 20fps is a good starting point. Because the flame, ripple and orbit
-frequencies are deliberately incommensurate, the animation has no true period — the loop will not be
-seamless.
+**SVG** writes the current frame as vector: one path for the sun outline, one per sliver, a circle or
+path for the hole, and one `<text>` element per glyph at the exact tracked position. Gradient becomes
+a `<radialGradient>` and glow an `<feDropShadow>`, so the file matches what is on screen. Non-system
+typefaces come in via a Google Fonts `@import` — the SVG renders correctly in a browser but falls
+back to a default sans in offline vector editors.
 
-Both exporters are self-contained. The GIF is written by an inline GIF89a encoder: median-cut down
-to a 256-colour global palette, then the classic LZW compressor. No libraries, no workers, no CDN.
+**PNG** is the current frame rendered at the chosen size. The artwork is resolution-independent, so
+2160px costs nothing but time.
+
+**GIF** records forward from the current moment. Frame timing is baked into the file, so the result
+is exact no matter how long encoding takes. The format stores delays in whole centiseconds, which
+caps it at **50fps** (2cs) — picking 60 gives you 50 and the status line says so. `Dither` trades
+file size for smoother gradients; leave it off for flat colour, where it does nothing but inflate
+the file.
+
+**Video** records to WebM (VP9) or MP4, whichever the browser supports, at up to **60fps** and full
+colour — the right choice when GIF's 256-colour palette is the limit. `MediaRecorder` timestamps by
+wall clock, so capture runs in real time and the tab must stay visible; hide it and the recording
+aborts rather than silently stretching.
+
+Because the flame, ripple and orbit frequencies are deliberately incommensurate, the animation has
+no true period — neither the GIF nor the video will loop seamlessly.
+
+Everything is self-contained. The GIF is written by an inline GIF89a encoder: a 15-bit colour
+histogram, median cut to a 256-colour global palette, then the classic LZW compressor. No libraries,
+no workers, no CDN.
+
+Rough cost per GIF frame on an M-series laptop: ~19ms at 480px, ~43ms at 720px, ~76ms at 1080px.
+A 720px / 3s / 50fps GIF is about 150 frames, so under ten seconds of work.
 
 ## Running locally
 

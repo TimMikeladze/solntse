@@ -17,14 +17,17 @@
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
-.wrap{max-width:920px;margin:0 auto;padding:32px 20px 64px}
-.masthead{margin-bottom:4px}
-.masthead h1{margin:0;font-family:"Montserrat",var(--font-sans);font-weight:900;font-size:26px;letter-spacing:0.16em;text-transform:uppercase}
-.masthead p{margin:6px 0 0;color:var(--text-secondary);max-width:62ch}
-.masthead .sub{color:var(--text-muted);font-size:13px}
+.wrap{max-width:920px;margin:0 auto;padding:18px 16px 40px}
+.masthead{margin-bottom:2px}
+.mh{display:flex;align-items:baseline;gap:4px 10px;flex-wrap:wrap}
+.mh h1{margin:0;font-family:"Montserrat",var(--font-sans);font-weight:900;font-size:19px;letter-spacing:0.15em;text-transform:uppercase}
+.mh p{margin:0;color:var(--text-secondary);font-size:13px}
+.about{margin-top:6px;font-size:12.5px;line-height:1.5;color:var(--text-muted);max-width:88ch}
+.about p{margin:0}
+.about em{color:var(--text-secondary)}
 .masthead a{color:var(--text-secondary);text-decoration-color:var(--border);text-underline-offset:2px}
 .masthead a:hover{color:var(--accent)}
-.links{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:13px}
+.links{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
 .links a{text-decoration:none;border-bottom:0.5px solid var(--border);padding-bottom:1px}
 button,input,select,textarea{font-family:inherit;font-size:14px;color:var(--text)}
 button{background:var(--panel);border:0.5px solid var(--border);border-radius:7px;padding:6px 11px;cursor:pointer}
@@ -39,28 +42,30 @@ input[type=range]{height:20px}
 <body>
 <div class="wrap">
 <header class="masthead">
-  <h1>Solntse</h1>
-  <p>An animated album-cover artwork: a liquid ink sun around a black circle, with editable heading and title text above and below it.</p>
-  <p class="sub">A tribute to the sleeve of <em lang="ru">Звезда по имени Солнце</em> (“A Star Called the Sun”) — the sixth and final studio album <a href="https://en.wikipedia.org/wiki/Kino_(band)" target="_blank" rel="noreferrer">KINO</a> released before <a href="https://en.wikipedia.org/wiki/Viktor_Tsoi" target="_blank" rel="noreferrer">Viktor Tsoi</a> died, out 29 August 1989. Nothing here is traced from that cover: the sun is generated from scratch on every frame. The defaults — yellow ink, black ground, КИНО above, the title below in red — are just tuned to land near it, and <strong>Reset to cover</strong> puts them back.</p>
-  <nav class="links">
-    <a href="https://en.wikipedia.org/wiki/Zvezda_po_imeni_Solntse" target="_blank" rel="noreferrer">Wikipedia</a>
-    <a href="https://open.spotify.com/album/0Yu3psNuEMTRM7tzHQgqfJ" target="_blank" rel="noreferrer">Spotify</a>
-    <a href="https://music.apple.com/us/album/1333017666" target="_blank" rel="noreferrer">Apple Music</a>
-    <a href="https://www.discogs.com/master/90723" target="_blank" rel="noreferrer">Discogs</a>
-  </nav>
+  <div class="mh"><h1>Solntse</h1><p>animated album-cover artwork — a liquid ink sun with editable type</p></div>
+  <div class="about">
+    <p>Draw a sun and set type around it: every slider reshapes the ink live, then export a still as SVG or PNG, or the animation as GIF or video. After the sleeve of <em lang="ru">Звезда по имени Солнце</em> (“A Star Called the Sun”), the last album <a href="https://en.wikipedia.org/wiki/Kino_(band)" target="_blank" rel="noreferrer">KINO</a> released before <a href="https://en.wikipedia.org/wiki/Viktor_Tsoi" target="_blank" rel="noreferrer">Viktor Tsoi</a> died, out 29 August 1989. Nothing is traced from it — the sun is generated from scratch on every frame, and the defaults simply land near that cover. <strong>Reset to cover</strong> returns them.</p>
+    <nav class="links">
+      <a href="https://en.wikipedia.org/wiki/Zvezda_po_imeni_Solntse" target="_blank" rel="noreferrer">Wikipedia</a>
+      <a href="https://open.spotify.com/album/0Yu3psNuEMTRM7tzHQgqfJ" target="_blank" rel="noreferrer">Spotify</a>
+      <a href="https://music.apple.com/us/album/1333017666" target="_blank" rel="noreferrer">Apple Music</a>
+      <a href="https://www.discogs.com/master/90723" target="_blank" rel="noreferrer">Discogs</a>
+      <a href="https://www.youtube.com/results?search_query=%D0%9A%D0%B8%D0%BD%D0%BE+%D0%97%D0%B2%D0%B5%D0%B7%D0%B4%D0%B0+%D0%BF%D0%BE+%D0%B8%D0%BC%D0%B5%D0%BD%D0%B8+%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5" target="_blank" rel="noreferrer">YouTube</a>
+    </nav>
+  </div>
 </header>
 <style>
-.lsc{display:grid;grid-template-columns:repeat(auto-fit,minmax(226px,1fr));gap:9px 20px;margin-top:12px}
-.lsr{display:flex;align-items:center;gap:10px}
+.lsc{display:grid;grid-template-columns:repeat(auto-fit,minmax(226px,1fr));gap:5px 18px;margin-top:8px}
+.lsr{display:flex;align-items:center;gap:8px}
 .lsr span.l{font-size:13px;color:var(--text-secondary);min-width:88px}
 .lsr input[type=range]{flex:1;min-width:54px}
 .lsr span.v{font-size:13px;font-weight:500;min-width:38px;text-align:right}
-.lsb{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.lsb{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:10px}
 .lsb button{font-size:13px}
 .lsb input[type=color]{width:32px;height:26px;padding:0;border:0.5px solid var(--border);border-radius:6px;background:none;cursor:pointer}
-.lsh{font-size:13px;color:var(--text-muted);margin:18px 0 2px;border-top:0.5px solid var(--border);padding-top:14px}
+.lsh{font-size:13px;color:var(--text-muted);margin:12px 0 2px;border-top:0.5px solid var(--border);padding-top:10px}
 </style>
-<div style="padding:1rem 0">
+<div style="padding:10px 0 0">
   <div id="sunbox" style="display:flex;justify-content:center"><canvas id="lavasun" style="border-radius:12px;display:block"></canvas></div>
   <div class="lsh">Shape</div>
   <div class="lsc">
@@ -83,9 +88,9 @@ input[type=range]{height:20px}
     <div class="lsr"><span class="l">Sun offset</span><input type="range" id="offy" min="-0.25" max="0.25" step="0.01" value="-0.02"><span class="v" id="offyo">-2%</span></div>
   </div>
   <div class="lsh">Type</div>
-  <div class="lsr" style="margin-top:10px"><span class="l">Top line</span><input type="text" id="ttop" value="" placeholder="e.g. КИНО" style="flex:1;min-width:0"></div>
-  <div class="lsr" style="margin-top:8px;align-items:flex-start"><span class="l" style="padding-top:7px">Bottom lines</span><textarea id="tbot" rows="3" placeholder="One line per row" style="flex:1;min-width:0;font-family:var(--font-sans);font-size:14px"></textarea></div>
-  <div class="lsr" style="margin-top:8px"><span class="l">Typeface</span><select id="tfont" style="flex:1"><option value="Montserrat">Montserrat black</option><option value="Oswald">Oswald condensed</option><option value="Roboto Condensed">Roboto condensed</option><option value="PT Sans Narrow">PT Sans narrow</option><option value="system">System sans</option></select></div>
+  <div class="lsr" style="margin-top:8px"><span class="l">Top line</span><input type="text" id="ttop" value="" placeholder="e.g. КИНО" style="flex:1;min-width:0"></div>
+  <div class="lsr" style="margin-top:6px;align-items:flex-start"><span class="l" style="padding-top:7px">Bottom lines</span><textarea id="tbot" rows="3" placeholder="One line per row" style="flex:1;min-width:0;font-family:var(--font-sans);font-size:14px"></textarea></div>
+  <div class="lsr" style="margin-top:6px"><span class="l">Typeface</span><select id="tfont" style="flex:1"><option value="Montserrat">Montserrat black</option><option value="Oswald">Oswald condensed</option><option value="Roboto Condensed">Roboto condensed</option><option value="PT Sans Narrow">PT Sans narrow</option><option value="system">System sans</option></select></div>
   <div class="lsc">
     <div class="lsr"><span class="l">Top size</span><input type="range" id="tsize" min="0.02" max="0.16" step="0.002" value="0.072"><span class="v" id="tsizeo">7%</span></div>
     <div class="lsr"><span class="l">Top tracking</span><input type="range" id="ttrack" min="0" max="0.5" step="0.01" value="0.14"><span class="v" id="ttracko">14%</span></div>
@@ -110,13 +115,16 @@ input[type=range]{height:20px}
   <div class="lsh">Export</div>
   <div class="lsb">
     <button id="bsvg" type="button">Export SVG</button>
+    <button id="bpng" type="button">Export PNG</button>
     <button id="bgif" type="button">Export GIF</button>
+    <button id="bvid" type="button">Export video</button>
     <span style="font-size:13px;color:var(--text-secondary)">Size</span>
-    <select id="gsize" aria-label="GIF size"><option value="240">240px</option><option value="360" selected>360px</option><option value="480">480px</option><option value="560">560px</option></select>
+    <select id="gsize" aria-label="Export size"><option value="360">360px</option><option value="480">480px</option><option value="720" selected>720px</option><option value="1080">1080px</option><option value="1440">1440px</option><option value="2160">2160px</option></select>
     <span style="font-size:13px;color:var(--text-secondary)">Length</span>
-    <select id="gsecs" aria-label="GIF length"><option value="1">1s</option><option value="2" selected>2s</option><option value="3">3s</option><option value="4">4s</option><option value="6">6s</option></select>
+    <select id="gsecs" aria-label="Capture length"><option value="1">1s</option><option value="2">2s</option><option value="3" selected>3s</option><option value="4">4s</option><option value="6">6s</option><option value="10">10s</option></select>
     <span style="font-size:13px;color:var(--text-secondary)">FPS</span>
-    <select id="gfps" aria-label="GIF frame rate"><option value="12">12</option><option value="20" selected>20</option><option value="25">25</option></select>
+    <select id="gfps" aria-label="Frame rate"><option value="12">12</option><option value="24">24</option><option value="30">30</option><option value="50">50</option><option value="60" selected>60</option></select>
+    <button id="bdith" type="button">Dither: off</button>
     <span id="gstat" role="status" style="font-size:13px;color:var(--text-muted)"></span>
   </div>
 </div>
@@ -124,6 +132,7 @@ input[type=range]{height:20px}
 (function(){
 var cv=document.getElementById('lavasun'),ctx=cv.getContext('2d'),TAU=Math.PI*2;
 var DPR=Math.min(window.devicePixelRatio||1,2),S=0,cx=0,cy=0,paused=false,grad=false,wob=false,caps=true;
+var capturing=false,dith=false;
 var keys=['speed','spin','flames','length','sharp','branch','jag','sweep','drops','dsize','sliver','orbit','ripple','hole','glow','scale','offy','tsize','ttrack','ty','bsize','btrack','lead','by'];
 var DEF={speed:1,spin:0.06,flames:15,length:0.72,sharp:0.68,branch:0.62,jag:0.5,sweep:0.28,drops:6,dsize:0.34,sliver:0.78,orbit:0.3,ripple:0.35,hole:0.44,glow:0,scale:0.79,offy:-0.02,tsize:0.072,ttrack:0.14,ty:0.095,bsize:0.046,btrack:0.1,lead:1.26,by:0.775},P={};
 function fmt(k,v){if(k==='flames'||k==='drops')return String(Math.round(v));if(k==='speed')return v.toFixed(1)+'\u00d7';if(k==='spin')return v.toFixed(2);return Math.round(v*100)+'%';}
@@ -219,7 +228,7 @@ function draw(t){derive();
  for(i=0;i<L.length;i++){ctx.font=fontCss(L[i].px);ctx.fillStyle=L[i].col;ctx.fillText(L[i].ch,L[i].x,L[i].y);}}
 var t0=performance.now(),T=0;
 function frame(now){var dt=Math.min(0.05,(now-t0)/1000);t0=now;if(!paused)T+=dt*P.speed;
- draw(T);requestAnimationFrame(frame);}
+ if(!capturing)draw(T);requestAnimationFrame(frame);}
 /* ---------- export ---------- */
 function xmlEsc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fileBase(){var s=(val('ttop')+'-'+val('tbot').split('\n').join('-')).trim()
@@ -263,24 +272,37 @@ function toSVG(t){derive();
  return s.join('\n');}
 
 /* Minimal GIF89a writer: median-cut palette + the classic LZW compressor. */
-function boxRange(b){var mn=[255,255,255],mx2=[0,0,0],i,k,c;
- for(i=0;i<b.length;i++){c=b[i];for(k=0;k<3;k++){if(c[k]<mn[k])mn[k]=c[k];if(c[k]>mx2[k])mx2[k]=c[k];}}
- var d=[mx2[0]-mn[0],mx2[1]-mn[1],mx2[2]-mn[2]];
- var ch=(d[0]>=d[1]&&d[0]>=d[2])?0:(d[1]>=d[2]?1:2);
- return{ch:ch,span:d[ch]};}
-function medianCut(samples,maxCols){
- var boxes=[samples],out=[],i;
+/* Colours go into a 15-bit histogram first, so median cut runs over a few
+   thousand weighted entries instead of every sampled pixel. */
+function newHist(){return{c:new Uint32Array(32768),r:new Float64Array(32768),
+ g:new Float64Array(32768),b:new Float64Array(32768)};}
+function histAdd(h,r,g,b){var k=((r>>3)<<10)|((g>>3)<<5)|(b>>3);
+ h.c[k]++;h.r[k]+=r;h.g[k]+=g;h.b[k]+=b;}
+function histEntries(h){var e=[],k,n;
+ for(k=0;k<32768;k++){n=h.c[k];if(n)e.push([h.r[k]/n,h.g[k]/n,h.b[k]/n,n]);}
+ return e;}
+function medianCut(ents,maxCols){
+ function mkBox(e){var mn=[255,255,255],mx=[0,0,0],w=0,j,k,c;
+  for(j=0;j<e.length;j++){c=e[j];w+=c[3];
+   for(k=0;k<3;k++){if(c[k]<mn[k])mn[k]=c[k];if(c[k]>mx[k])mx[k]=c[k];}}
+  var d=[mx[0]-mn[0],mx[1]-mn[1],mx[2]-mn[2]];
+  var ch=(d[0]>=d[1]&&d[0]>=d[2])?0:(d[1]>=d[2]?1:2);
+  return{e:e,ch:ch,w:w,score:d[ch]*w};}
+ if(!ents.length)return[[0,0,0]];
+ var boxes=[mkBox(ents)],out=[],i;
  while(boxes.length<maxCols){
   var bi=-1,best=0;
-  for(i=0;i<boxes.length;i++){if(boxes[i].length<2)continue;
-   var sc=boxRange(boxes[i]).span*boxes[i].length;if(sc>best){best=sc;bi=i;}}
-  if(bi<0||best===0)break;
-  var box=boxes[bi],ch=boxRange(box).ch;
-  box.sort(function(a,b){return a[ch]-b[ch];});
-  boxes.splice(bi,1,box.slice(0,box.length>>1),box.slice(box.length>>1));}
- for(i=0;i<boxes.length;i++){var b=boxes[i];if(!b.length)continue;
-  var r=0,g=0,bl=0,k;for(k=0;k<b.length;k++){r+=b[k][0];g+=b[k][1];bl+=b[k][2];}
-  out.push([Math.round(r/b.length),Math.round(g/b.length),Math.round(bl/b.length)]);}
+  for(i=0;i<boxes.length;i++)if(boxes[i].e.length>1&&boxes[i].score>best){best=boxes[i].score;bi=i;}
+  if(bi<0)break;
+  var bx=boxes[bi],ch=bx.ch;
+  bx.e.sort(function(a,b){return a[ch]-b[ch];});
+  var half=bx.w/2,acc=0,cut=0;
+  for(i=0;i<bx.e.length-1;i++){acc+=bx.e[i][3];if(acc>=half){cut=i+1;break;}}
+  if(cut<1||cut>=bx.e.length)cut=bx.e.length>>1;
+  boxes.splice(bi,1,mkBox(bx.e.slice(0,cut)),mkBox(bx.e.slice(cut)));}
+ for(i=0;i<boxes.length;i++){var e=boxes[i].e,r=0,g=0,b=0,w=0,j;
+  for(j=0;j<e.length;j++){r+=e[j][0]*e[j][3];g+=e[j][1]*e[j][3];b+=e[j][2]*e[j][3];w+=e[j][3];}
+  if(w)out.push([Math.round(r/w),Math.round(g/w),Math.round(b/w)]);}
  return out.length?out:[[0,0,0]];}
 function nearestFn(pal){var cache=new Int16Array(262144).fill(-1);
  return function(r,g,b){var key=((r>>2)<<12)|((g>>2)<<6)|(b>>2),v=cache[key];
@@ -333,69 +355,154 @@ function lzwEncode(px,minCode,out){
   output(ent);ent=c;
   if(free_ent<maxmaxcode){codetab[i]=free_ent++;htab[i]=fcode;}else clBlock();}
  output(ent);output(EOFCode);out.w(0);}
-function gifBuild(w,h,pal,frames,delayCs){
- var b=new Bytes(),i;
+/* Frames are written straight into the output buffer as they are produced, so a
+   long capture costs one index buffer rather than every frame's pixels. */
+function gifStart(b,w,h,pal){
+ var i,depth=1;while((1<<depth)<pal.length)depth++;if(depth>8)depth=8;
  function p(){for(var q=0;q<arguments.length;q++)b.w(arguments[q]);}
  function str(s){for(var q=0;q<s.length;q++)b.w(s.charCodeAt(q));}
  function u16(v){b.w(v&0xff);b.w((v>>8)&0xff);}
- var depth=1;while((1<<depth)<pal.length)depth++;if(depth>8)depth=8;
- var palSize=1<<depth,minCode=Math.max(2,depth);
  str('GIF89a');u16(w);u16(h);
  p(0x80|((depth-1)<<4)|(depth-1),0,0);
- for(i=0;i<palSize;i++){var c=pal[i]||[0,0,0];p(c[0],c[1],c[2]);}
+ for(i=0;i<(1<<depth);i++){var c=pal[i]||[0,0,0];p(c[0],c[1],c[2]);}
  p(0x21,0xff,11);str('NETSCAPE2.0');p(3,1,0,0,0);
- for(i=0;i<frames.length;i++){
-  p(0x21,0xf9,4,0x04,delayCs&0xff,(delayCs>>8)&0xff,0,0);
-  p(0x2c);u16(0);u16(0);u16(w);u16(h);p(0,minCode);
-  lzwEncode(frames[i],minCode,b);}
- p(0x3b);
- return b.done();}
+ return Math.max(2,depth);}
+function gifFrame(b,w,h,idx,minCode,delayCs){
+ function p(){for(var q=0;q<arguments.length;q++)b.w(arguments[q]);}
+ function u16(v){b.w(v&0xff);b.w((v>>8)&0xff);}
+ p(0x21,0xf9,4,0x04,delayCs&0xff,(delayCs>>8)&0xff,0,0);
+ p(0x2c);u16(0);u16(0);u16(w);u16(h);p(0,minCode);
+ lzwEncode(idx,minCode,b);}
+function quantPlain(d,px,near,idx){for(var i=0;i<px;i++)idx[i]=near(d[i*4],d[i*4+1],d[i*4+2]);}
+function quantDither(d,w,h,pal,near,idx){
+ var cur=new Float32Array(w*3),nxt=new Float32Array(w*3),x,y,i,t;
+ for(y=0;y<h;y++){
+  nxt.fill(0);
+  for(x=0;x<w;x++){
+   i=(y*w+x)*4;
+   var r=d[i]+cur[x*3],g=d[i+1]+cur[x*3+1],b=d[i+2]+cur[x*3+2];
+   r=r<0?0:r>255?255:r;g=g<0?0:g>255?255:g;b=b<0?0:b>255?255:b;
+   var ci=near(r|0,g|0,b|0),p=pal[ci];idx[y*w+x]=ci;
+   var er=r-p[0],eg=g-p[1],eb=b-p[2];
+   if(x+1<w){cur[(x+1)*3]+=er*0.4375;cur[(x+1)*3+1]+=eg*0.4375;cur[(x+1)*3+2]+=eb*0.4375;}
+   if(x>0){nxt[(x-1)*3]+=er*0.1875;nxt[(x-1)*3+1]+=eg*0.1875;nxt[(x-1)*3+2]+=eb*0.1875;}
+   nxt[x*3]+=er*0.3125;nxt[x*3+1]+=eg*0.3125;nxt[x*3+2]+=eb*0.3125;
+   if(x+1<w){nxt[(x+1)*3]+=er*0.0625;nxt[(x+1)*3+1]+=eg*0.0625;nxt[(x+1)*3+2]+=eb*0.0625;}}
+  t=cur;cur=nxt;nxt=t;}}
 
-var busy=false;
+var busy=false,EXBTN=['bsvg','bpng','bgif','bvid'];
 function tick(){return new Promise(function(r){setTimeout(r,0);});}
-function exportGIF(){
- if(busy)return;busy=true;
- var btn=document.getElementById('bgif'),stat=document.getElementById('gstat');
- var size=parseInt(val('gsize'),10),secs=parseFloat(val('gsecs')),fps=parseInt(val('gfps'),10);
- var count=Math.max(2,Math.min(200,Math.round(secs*fps))),delayCs=Math.max(2,Math.round(100/fps));
- var oc=document.createElement('canvas');oc.width=size;oc.height=size;
+function nextFrame(){return new Promise(function(r){requestAnimationFrame(r);});}
+function setBusy(v){busy=v;for(var i=0;i<EXBTN.length;i++)document.getElementById(EXBTN[i]).disabled=v;}
+function say(m){document.getElementById('gstat').textContent=m;}
+function opts(){return{size:parseInt(val('gsize'),10),secs:parseFloat(val('gsecs')),fps:parseInt(val('gfps'),10)};}
+function mb(n){return (n/1048576).toFixed(n<1048576*10?2:1)+' MB';}
+/* Point the renderer at an offscreen canvas of a different size. Glow is the one
+   value tied to pixel density, so DPR is scaled to keep it proportional. */
+function useCanvas(w){
+ var oc=document.createElement('canvas');oc.width=w;oc.height=w;
  var octx=oc.getContext('2d',{willReadFrequently:true});
- var sv={cv:cv,ctx:ctx,S:S,cx:cx,cy:cy,DPR:DPR},dispSide=cv.width/DPR;
- btn.disabled=true;
- var frames=[],samples=[],px=size*size,startT=T;
- function restoreCanvas(){cv=sv.cv;ctx=sv.ctx;S=sv.S;cx=sv.cx;cy=sv.cy;DPR=sv.DPR;}
- function finish(){restoreCanvas();btn.disabled=false;busy=false;}
+ var sv={cv:cv,ctx:ctx,S:S,cx:cx,cy:cy,DPR:DPR},disp=cv.width/DPR;
+ cv=oc;ctx=octx;S=w/2;cx=S;cy=S;DPR=w/disp;
+ return{c:oc,g:octx,restore:function(){cv=sv.cv;ctx=sv.ctx;S=sv.S;cx=sv.cx;cy=sv.cy;DPR=sv.DPR;}};}
+
+function exportPNG(){
+ if(busy)return;var o=opts();setBusy(true);capturing=true;
+ var t=useCanvas(o.size);
+ try{draw(T);t.c.toBlob(function(b){download(b,fileBase()+'.png');say('PNG '+o.size+'px · '+mb(b.size));},'image/png');}
+ catch(e){say('failed: '+e.message);}
+ finally{t.restore();capturing=false;setBusy(false);}}
+
+function exportGIF(){
+ if(busy)return;
+ var o=opts(),delayCs=Math.max(2,Math.round(100/o.fps)),fps=100/delayCs;
+ var count=Math.max(2,Math.min(600,Math.round(o.secs*fps))),startT=T,px=o.size*o.size;
+ setBusy(true);
  return (async function(){
+  var live=null;
   try{
-   cv=oc;ctx=octx;S=size/2;cx=S;cy=S;DPR=size/dispSide;
-   for(var i=0;i<count;i++){
-    draw(startT+(i/fps)*P.speed);
-    var d=octx.getImageData(0,0,size,size).data;
-    var idx=new Uint8Array(px),raw=new Uint8Array(px*3),q;
-    for(q=0;q<px;q++){raw[q*3]=d[q*4];raw[q*3+1]=d[q*4+1];raw[q*3+2]=d[q*4+2];}
-    frames.push({raw:raw,idx:idx});
-    for(q=0;q<px;q+=37)samples.push([raw[q*3],raw[q*3+1],raw[q*3+2]]);
-    stat.textContent='frame '+(i+1)+'/'+count;
+   capturing=true;
+   /* Palette pre-pass at a small size: same colours, a fraction of the pixels. */
+   say('sampling colours…');await tick();
+   var ps=Math.min(o.size,240),pre=useCanvas(ps),hist=newHist(),i,q;
+   for(i=0;i<12;i++){
+    draw(startT+(i/12)*o.secs*P.speed);
+    var pd=pre.g.getImageData(0,0,ps,ps).data;
+    for(q=0;q<ps*ps;q+=2)histAdd(hist,pd[q*4],pd[q*4+1],pd[q*4+2]);
     await tick();}
-   restoreCanvas();
-   stat.textContent='building palette…';await tick();
-   var pal=medianCut(samples,256),near=nearestFn(pal);
-   var out=[];
-   for(i=0;i<frames.length;i++){
-    var f=frames[i];
-    for(var j=0;j<px;j++)f.idx[j]=near(f.raw[j*3],f.raw[j*3+1],f.raw[j*3+2]);
-    f.raw=null;out.push(f.idx);
-    stat.textContent='encoding '+(i+1)+'/'+count;await tick();}
-   var bytes=gifBuild(size,size,pal,out,delayCs);
+   pre.restore();
+   say('building palette…');await tick();
+   var pal=medianCut(histEntries(hist),256),near=nearestFn(pal);
+   live=useCanvas(o.size);
+   var out=new Bytes(),minCode=gifStart(out,o.size,o.size,pal),idx=new Uint8Array(px);
+   for(i=0;i<count;i++){
+    draw(startT+(i/fps)*P.speed);
+    var d=live.g.getImageData(0,0,o.size,o.size).data;
+    if(dith)quantDither(d,o.size,o.size,pal,near,idx);else quantPlain(d,px,near,idx);
+    gifFrame(out,o.size,o.size,idx,minCode,delayCs);
+    say('GIF '+(i+1)+'/'+count);
+    await tick();}
+   out.w(0x3b);
+   live.restore();live=null;
+   var bytes=out.done();
    download(new Blob([bytes],{type:'image/gif'}),fileBase()+'.gif');
-   stat.textContent=(bytes.length/1048576).toFixed(1)+' MB';
-  }catch(e){stat.textContent='failed: '+e.message;finish();throw e;}
-  finish();})();}
+   say('GIF '+o.size+'px · '+Math.round(fps)+'fps · '+count+' frames · '+mb(bytes.length)+
+       (o.fps>fps+0.5?' (GIF caps at '+Math.round(fps)+'fps)':''));
+  }catch(e){say('failed: '+e.message);}
+  finally{if(live)live.restore();capturing=false;setBusy(false);}})();}
+
+function videoMime(){
+ if(!window.MediaRecorder)return null;
+ var t=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'];
+ for(var i=0;i<t.length;i++)if(MediaRecorder.isTypeSupported(t[i]))return t[i];
+ return null;}
+function exportVideo(){
+ if(busy)return;
+ var mime=videoMime();
+ if(!mime){say('this browser cannot record video');return;}
+ if(document.hidden){say('keep this tab visible — video records in real time');return;}
+ var o=opts(),count=Math.max(2,Math.round(o.secs*o.fps)),startT=T;
+ setBusy(true);
+ return (async function(){
+  var live=null;
+  try{
+   capturing=true;live=useCanvas(o.size);
+   draw(startT);
+   var stream=live.c.captureStream(0),track=stream.getVideoTracks()[0];
+   var rec=new MediaRecorder(stream,{mimeType:mime,
+    videoBitsPerSecond:Math.min(80e6,Math.max(1.2e7,Math.round(o.size*o.size*o.fps*0.35)))});
+   var chunks=[];rec.ondataavailable=function(e){if(e.data&&e.data.size)chunks.push(e.data);};
+   var stopped=new Promise(function(r){rec.onstop=r;});
+   rec.start();
+   /* MediaRecorder timestamps by wall clock, so the capture has to run in real
+      time. Pacing on rAF keeps it locked to the display; a hidden tab stops rAF
+      and stalls the encoder, which would stretch the clip, so bail out instead. */
+   var t0v=performance.now(),late=0,i;
+   for(i=0;i<count;i++){
+    if(document.hidden)throw new Error('tab was hidden mid-capture');
+    draw(startT+(i/o.fps)*P.speed);
+    track.requestFrame();
+    var due=t0v+(i+1)*1000/o.fps;
+    if(performance.now()>due)late++;
+    while(performance.now()<due&&!document.hidden)await nextFrame();
+    say('video '+(i+1)+'/'+count);}
+   var real=count/((performance.now()-t0v)/1000);
+   rec.stop();await stopped;
+   live.restore();live=null;
+   var blob=new Blob(chunks,{type:mime}),ext=mime.indexOf('mp4')>=0?'.mp4':'.webm';
+   download(blob,fileBase()+ext);
+   say('video '+o.size+'px · '+real.toFixed(0)+'fps'+(late?' · '+late+' late':'')+' · '+mb(blob.size));
+  }catch(e){say('failed: '+e.message);}
+  finally{if(live)live.restore();capturing=false;setBusy(false);}})();}
 
 document.getElementById('bsvg').addEventListener('click',function(){
- download(new Blob([toSVG(T)],{type:'image/svg+xml'}),fileBase()+'.svg');
- document.getElementById('gstat').textContent='SVG saved';});
+ if(busy)return;
+ download(new Blob([toSVG(T)],{type:'image/svg+xml'}),fileBase()+'.svg');say('SVG saved');});
+document.getElementById('bpng').addEventListener('click',exportPNG);
 document.getElementById('bgif').addEventListener('click',exportGIF);
+document.getElementById('bvid').addEventListener('click',exportVideo);
+document.getElementById('bdith').addEventListener('click',function(){
+ dith=!dith;this.textContent='Dither: '+(dith?'on':'off');});
 
 document.getElementById('bpause').addEventListener('click',function(){paused=!paused;this.innerHTML='<i class="ti '+(paused?'ti-player-play':'ti-player-pause')+'" style="font-size:16px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>'+(paused?'Play':'Pause');});
 document.getElementById('brand').addEventListener('click',function(){build(Math.floor(Math.random()*1e6));});
@@ -405,7 +512,7 @@ document.getElementById('bwob').addEventListener('click',function(){wob=!wob;thi
 document.getElementById('breset').addEventListener('click',function(){for(var i=0;i<keys.length;i++)document.getElementById(keys[i]).value=DEF[keys[i]];
  document.getElementById('c1').value='#f2d14b';document.getElementById('c2').value='#0a0a0a';document.getElementById('c3').value='#f4f2ea';document.getElementById('c4').value='#e01b1b';
  document.getElementById('ttop').value='КИНО';document.getElementById('tbot').value='ЗВЕЗДА\nПО ИМЕНИ\nСОЛНЦЕ';document.getElementById('tfont').value='Montserrat';
- grad=false;wob=false;caps=true;document.getElementById('bgrad').textContent='Gradient: off';document.getElementById('bwob').textContent='Liquid hole: off';document.getElementById('bcaps').textContent='Caps: on';
+ grad=false;wob=false;caps=true;dith=false;document.getElementById('bgrad').textContent='Gradient: off';document.getElementById('bwob').textContent='Liquid hole: off';document.getElementById('bcaps').textContent='Caps: on';document.getElementById('bdith').textContent='Dither: off';
  build(514422);sync();});
 window.addEventListener('resize',fit);sync();fit();requestAnimationFrame(frame);
 })();
