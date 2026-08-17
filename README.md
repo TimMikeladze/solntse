@@ -28,9 +28,14 @@ Nothing here is traced from that cover: the sun is generated from scratch on eve
 
 Open the page and start moving sliders. The canvas updates live.
 
+Every load opens on a different sun: the shape sliders, the seed, the spin direction and the gradient
+and liquid-hole toggles are all randomised within a range that stays legible. The album cover is one
+point in that space, not the starting point.
+
 - **Top line** and **Bottom lines** start empty. Type your own, one line per row in the textarea.
-- **Reset to cover** restores the original КИНО / ЗВЕЗДА ПО ИМЕНИ СОЛНЦЕ artwork and every default.
-- **Randomise** reseeds the flame and sliver geometry without touching your slider values.
+- **Randomise** rolls a new sun — sliders, seed and toggles together.
+- **Reset to cover** goes the other way: the original КИНО / ЗВЕЗДА ПО ИМЕНИ СОЛНЦЕ artwork and every
+  documented default.
 - **Pause** freezes the animation so you can grab a specific frame.
 
 ### Controls

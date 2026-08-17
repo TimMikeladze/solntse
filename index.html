@@ -16,7 +16,7 @@
 <meta property="og:image" content="https://solntse.vercel.app/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="A jagged yellow sun on black under the word SOLNTSE">
+<meta property="og:image:alt" content="A jagged yellow sun on a black ground">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Solntse — animated album cover generator">
 <meta name="twitter:description" content="Make animated album cover artwork in the browser: a procedural sun with editable type. Export as SVG, PNG, GIF or 60fps video.">
@@ -54,6 +54,9 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans
 .about em{color:var(--text-secondary)}
 .masthead a{color:var(--text-secondary);text-decoration-color:var(--border);text-underline-offset:2px}
 .masthead a:hover{color:var(--accent)}
+.foot{margin-top:16px;padding-top:12px;border-top:0.5px solid var(--border);font-size:12.5px}
+.foot a{color:var(--text-muted);text-decoration:none}
+.foot a:hover{color:var(--accent)}
 .links{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
 .links a{text-decoration:none;border-bottom:0.5px solid var(--border);padding-bottom:1px}
 button,input,select,textarea{font-family:inherit;font-size:14px;color:var(--text)}
@@ -155,6 +158,7 @@ input[type=range]{height:20px}
     <span id="gstat" role="status" style="font-size:13px;color:var(--text-muted)"></span>
   </div>
 </div>
+<footer class="foot"><a href="https://github.com/TimMikeladze/solntse" target="_blank" rel="noreferrer">TimMikeladze/solntse</a></footer>
 <script>
 (function(){
 var cv=document.getElementById('lavasun'),ctx=cv.getContext('2d'),TAU=Math.PI*2;
@@ -174,6 +178,23 @@ function build(sd){var r=seed(sd),i,k;SL=[];DR=[];JG=[];
  for(i=0;i<24;i++)DR.push({a0:r()*TAU,rj:r(),ob:r(),oa:0.04+r()*0.09,os:0.12+r()*0.26,op:r()*TAU,sz:0.45+r()*1.05,ps:(r()-0.5)*1.1,as:0.75+r()*0.5,w:r()*TAU});
  var ks=[9,15,23,37];for(i=0;i<4;i++)JG.push({k:ks[i]+Math.floor(r()*7),ph:r()*TAU,dr:(r()-0.5)*0.6,a:[0.5,0.3,0.2,0.13][i]});}
 build(514422);
+/* The cover in DEF is one point in a wide space. Every load lands somewhere else
+   in it, so the page opens on a sun nobody has seen rather than the same still. */
+var WILD={speed:[1.3,2.4],spin:[0.05,0.3],flames:[7,22],length:[0.5,0.95],sharp:[0.35,0.9],
+ branch:[0.25,0.95],jag:[0.2,0.85],sweep:[0.05,0.6],drops:[3,14],dsize:[0.2,0.6],
+ sliver:[0.45,0.95],orbit:[0.15,0.6],ripple:[0.25,0.8],hole:[0.3,0.52],
+ scale:[0.7,0.88],offy:[-0.03,0.03]};
+function rnd(a,b){return a+Math.random()*(b-a);}
+function shuffle(){
+ for(var k in WILD){var r=WILD[k],v=rnd(r[0],r[1]);
+  if(k==='flames'||k==='drops')v=Math.round(v);
+  if(k==='spin'&&Math.random()<0.5)v=-v;
+  document.getElementById(k).value=v;}
+ document.getElementById('glow').value=Math.random()<0.55?0:rnd(0.12,0.42);
+ grad=Math.random()<0.3;wob=Math.random()<0.35;
+ document.getElementById('bgrad').textContent='Gradient: '+(grad?'on':'off');
+ document.getElementById('bwob').textContent='Liquid hole: '+(wob?'on':'off');
+ build(Math.floor(Math.random()*1e6));sync();}
 function hx(h){h=h.replace('#','');return[parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];}
 function mx(c,w,a){return'rgb('+Math.round(c[0]+(w[0]-c[0])*a)+','+Math.round(c[1]+(w[1]-c[1])*a)+','+Math.round(c[2]+(w[2]-c[2])*a)+')';}
 function val(id){return document.getElementById(id).value;}
@@ -532,7 +553,7 @@ document.getElementById('bdith').addEventListener('click',function(){
  dith=!dith;this.textContent='Dither: '+(dith?'on':'off');});
 
 document.getElementById('bpause').addEventListener('click',function(){paused=!paused;this.innerHTML='<i class="ti '+(paused?'ti-player-play':'ti-player-pause')+'" style="font-size:16px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>'+(paused?'Play':'Pause');});
-document.getElementById('brand').addEventListener('click',function(){build(Math.floor(Math.random()*1e6));});
+document.getElementById('brand').addEventListener('click',shuffle);
 document.getElementById('bcaps').addEventListener('click',function(){caps=!caps;this.textContent='Caps: '+(caps?'on':'off');});
 document.getElementById('bgrad').addEventListener('click',function(){grad=!grad;this.textContent='Gradient: '+(grad?'on':'off');});
 document.getElementById('bwob').addEventListener('click',function(){wob=!wob;this.textContent='Liquid hole: '+(wob?'on':'off');});
@@ -541,7 +562,7 @@ document.getElementById('breset').addEventListener('click',function(){for(var i=
  document.getElementById('ttop').value='КИНО';document.getElementById('tbot').value='ЗВЕЗДА\nПО ИМЕНИ\nСОЛНЦЕ';document.getElementById('tfont').value='Montserrat';
  grad=false;wob=false;caps=true;dith=false;document.getElementById('bgrad').textContent='Gradient: off';document.getElementById('bwob').textContent='Liquid hole: off';document.getElementById('bcaps').textContent='Caps: on';document.getElementById('bdith').textContent='Dither: off';
  build(514422);sync();});
-window.addEventListener('resize',fit);sync();fit();requestAnimationFrame(frame);
+window.addEventListener('resize',fit);shuffle();fit();requestAnimationFrame(frame);
 })();
 </script>
 </div>
