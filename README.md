@@ -37,7 +37,9 @@ toggle are randomised within a range that stays legible. Liquid hole always star
 cover is one point in that space, not the starting point.
 
 - **Top line** and **Bottom lines** start empty. Type your own, one line per row in the textarea.
-- **Randomise** rolls a new sun — sliders, seed and toggles together.
+- **Randomise** rolls a new sun — sliders, seed and toggles together. The same roll is on the
+  artwork itself, bottom right: on a phone the button row is off the bottom of the screen while you
+  are looking at the sun.
 - **Reset to cover** goes the other way: the original КИНО / ЗВЕЗДА ПО ИМЕНИ СОЛНЦЕ artwork and every
   documented default.
 - **Pause** freezes the animation so you can grab a specific frame.
