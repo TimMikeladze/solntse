@@ -29,6 +29,9 @@ Nothing here is traced from that cover: the sun is generated from scratch on eve
 
 Open the page and start moving sliders. The canvas updates live.
 
+On a phone the page does not zoom. Dragging a slider and tapping a tile twice in quick succession are
+both ordinary use here, and either one would otherwise be taken for a zoom gesture.
+
 Every load opens on a different sun: the shape sliders, the seed, the spin direction and the gradient
 toggle are randomised within a range that stays legible. Liquid hole always starts off. The album
 cover is one point in that space, not the starting point.

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Solntse — a tribute to КИНО's Звезда по имени Солнце</title>
 <meta name="description" content="The sun from КИНО's 1989 sleeve Звезда по имени Солнце, rebuilt so you can shape it yourself — change the rays, the colours and the type, then share it.">
 <link rel="canonical" href="https://solntse.vercel.app/">
@@ -45,7 +45,10 @@
   --text-muted:#6e6b66;--border:#2a2a2d;--accent:#f2d14b;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+/* Dragging a slider or tapping a tile twice in quick succession is ordinary use
+   here, and on a phone both would otherwise be read as zoom gestures. */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;touch-action:manipulation}
 .wrap{max-width:920px;margin:0 auto;padding:18px 16px 40px}
 .masthead{margin-bottom:2px}
 .mh{display:flex;align-items:baseline;gap:4px 10px;flex-wrap:wrap}
@@ -97,7 +100,8 @@ input[type=range]{height:20px}
 .lsh{font-size:13px;color:var(--text-muted);margin:12px 0 2px;border-top:0.5px solid var(--border);padding-top:10px}
 #wall{position:fixed;inset:0;z-index:99;background:#000;display:none}
 #wall.on{display:block}
-#wallcv{display:block;width:100%;height:100%;cursor:pointer}
+/* The wall is a fixed full-screen surface: no panning, no pinch, no rubber-band. */
+#wallcv{display:block;width:100%;height:100%;cursor:pointer;touch-action:none}
 .wallbar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:100;
  display:flex;gap:7px;align-items:center;font-size:13px;
  background:rgba(20,20,22,0.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
