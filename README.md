@@ -2,10 +2,10 @@
 
 **[solntse.vercel.app](https://solntse.vercel.app)**
 
-An animated album-cover artwork generator: a liquid ink sun around a black circle, with editable
+An animated album-cover artwork generator: a procedural sun around a black circle, with editable
 heading and title text above and below it. Everything is drawn on a `<canvas>` at 60fps — the sun's
-flames, slivers and ripples are procedural, so no two seeds look alike. Export a still as SVG or the
-animation as a GIF.
+flames, slivers and ripples are generated, so no two seeds look alike. Export a still as SVG or PNG,
+or the animation as a GIF or a 60fps video.
 
 ![Solntse](screenshot.png)
 
