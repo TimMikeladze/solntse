@@ -5,7 +5,8 @@
 An animated album-cover artwork generator: a procedural sun around a black circle, with editable
 heading and title text above and below it. Everything is drawn on a `<canvas>` at 60fps — the sun's
 flames, slivers and ripples are generated, so no two seeds look alike. Export a still as SVG or PNG,
-or the animation as a GIF or a 60fps video.
+or the animation as a GIF or a 60fps video — or drop the controls and fill the screen with a grid of
+suns.
 
 ![Solntse](screenshot.png)
 
@@ -37,7 +38,82 @@ cover is one point in that space, not the starting point.
 - **Reset to cover** goes the other way: the original КИНО / ЗВЕЗДА ПО ИМЕНИ СОЛНЦЕ artwork and every
   documented default.
 - **Pause** freezes the animation so you can grab a specific frame.
+- **Wall** fills the screen with a grid of independent suns — see below.
 - **Copy link** puts the current artwork on your clipboard as a URL.
+
+## Wall
+
+**Wall** (or the `w` key) drops the editor and tiles the whole screen with suns, each one its own
+shape, seed, palette, speed and phase, all animating at once. It is the generator with the controls
+taken away — a contact sheet of everywhere the sliders could have gone.
+
+- **Randomise** (or `r`) rerolls every tile.
+- **cols** and **rows** are set independently, each from 1 to 10, by the steppers or by typing a
+  number. `-` / `+` change columns, `[` / `]` change rows.
+- **Fit** puts rows back on automatic — as many as it takes to cover the height at the current
+  column width, which is also how the wall opens. Setting rows by hand turns that off, so a grid you
+  chose survives a window resize.
+- **Fullscreen** (or `f`) hands the page to the Fullscreen API.
+- **Close** or `Escape` goes back. With a tile open for editing, `Escape` closes that first.
+
+Cells need not be square once rows and columns are set apart. The sun keeps a square viewport centred
+in its cell, so it never stretches — a 7×2 grid on a wide screen gives tall cells with round suns in
+them, not ovals.
+
+The control bar lingers for eight seconds and returns on the next mouse move. It never leaves while
+the pointer is on it, while a tile is being edited, or while an export is running.
+
+Every tile is black-grounded and has its liquid hole off, on every roll. Both are things you turn on
+for one tile by hand in the panel, never things chance does to you — and one shared ground means no
+tile edge ever shows as a seam. The lava is the sleeve's yellow most of the time, with occasional
+strays.
+
+### What it costs
+
+Tile *count* governs the frame, not the column count on its own. Outline resolution follows tile
+size, flames and slivers drop out below a few dozen pixels, and a controller watches the measured
+frame time and trims quality when the wall gets dear to draw.
+
+Median frame on an M-series laptop at 1456×832: about 11ms for 4×3 and 15ms for the full 10×10 at a
+hundred tiles. The ceiling is set there because past a few hundred tiles the cost is per-tile canvas
+overhead that no amount of geometry trimming removes — 20×20 already runs at 35ms, and it only gets
+worse from there.
+
+### Editing a tile
+
+Hovering a tile outlines it; clicking one opens a panel for **that sun alone**, while every other
+tile keeps animating behind it. The tile being edited keeps a brighter outline so you can see which
+one you are holding.
+
+The panel carries its own preview and the sixteen shape sliders, both colours, and the `Gradient` and
+`Liquid hole` toggles. It drives the tile's own parameters directly, so the preview and the tile on
+the wall are the same numbers changing live — there is no apply step.
+
+- **New seed** rebuilds that tile's geometry and leaves the sliders alone.
+- **Randomise** rolls the tile over completely.
+- **Open in editor** hands the sun to the full editor below and closes the wall — with every edit you
+  just made, and the URL updated so it is immediately shareable.
+- **Done** closes the panel and leaves the tile as you made it.
+
+Edits survive resizing and grid changes. They do not survive **Randomise** on the bar, which is the
+point of that button.
+
+`Gradient` and `Liquid hole` are here because randomising will never set them for you — the panel is
+where a tile gets something the roll would not give it.
+
+### Exporting the wall
+
+**PNG**, **GIF** and **Video** in the bar record the whole grid, using the same encoders as the
+single-sun exports — the wall is just another scene handed to them. The `1920px` control sets the
+width; height follows from the grid, so an export is always whole tiles and never a part row. The
+two selects beside it are capture length and frame rate, independent of the ones in the main Export
+row.
+
+Hover rings and the edit outline are screen furniture and never reach an export.
+
+There is no SVG export for the wall. A hundred tiles at over a thousand outline points each would run
+to tens of megabytes, and every tile would need its gradient and glow filter ids rewritten to avoid
+collisions. Export a single sun as SVG instead.
 
 ## Sharing
 
@@ -73,7 +149,10 @@ diffusion when writing a GIF.
 
 ## Export
 
-Four exporters share the `Size` (up to 2160px), `Length` and `FPS` controls.
+Four exporters share the `Size` (up to 2160px), `Length` and `FPS` controls. PNG, GIF and video are
+written against a *scene* — something that can paint itself at a given time into an offscreen canvas
+of a chosen size. The single sun is one scene and the wall is another, so both subjects go through
+one PNG path, one GIF encoder and one video recorder.
 
 **SVG** writes the current frame as vector: one path for the sun outline, one per sliver, a circle or
 path for the hole, and one `<text>` element per glyph at the exact tracked position. Gradient becomes
@@ -126,12 +205,19 @@ Opening `index.html` directly from the filesystem works too.
 3. Recursive child spikes when `Branching` is up.
 4. Four high-frequency sine terms for `Jaggedness`, weighted toward the flame tips.
 
-The outline is then walked at 1180 steps and filled as one path. Detached slivers orbit outside it
-as stretched quadratic-curve lozenges, and pull the outline toward them when they pass close — which
-is what makes the ink look like it is throwing off droplets rather than having them pasted on.
+The outline is then walked at up to 1180 steps and filled as one path. Points go into one reused
+buffer rather than a fresh array per point, because a wall makes that path run thousands of times a
+frame. Detached slivers orbit outside it as stretched quadratic-curve lozenges, and pull the outline
+toward them when they pass close — which is what makes the ink look like it is throwing off droplets
+rather than having them pasted on.
 
 Geometry is deliberately kept out of the draw call — `outline()`, `sliverGeom()`, `holePts()` and
 `layout()` return plain numbers, and the canvas renderer and the SVG exporter are two consumers of
 the same values. That is why the exported vector lines up with the pixels exactly.
+
+The sun draws into a square *viewport* (`VX`, `VY`, `VS`) rather than into the whole canvas. On the
+main canvas that viewport is the canvas; on the wall it is one tile. There is still exactly one
+renderer: exports and wall tiles both point it at a different surface by swapping the globals it
+reads, so a sun on the wall and a sun in the editor cannot drift apart.
 
 Randomness comes from a seeded PRNG (`seed()`), so a given seed always rebuilds the same geometry.
