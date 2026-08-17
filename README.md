@@ -29,14 +29,31 @@ Nothing here is traced from that cover: the sun is generated from scratch on eve
 Open the page and start moving sliders. The canvas updates live.
 
 Every load opens on a different sun: the shape sliders, the seed, the spin direction and the gradient
-and liquid-hole toggles are all randomised within a range that stays legible. The album cover is one
-point in that space, not the starting point.
+toggle are randomised within a range that stays legible. Liquid hole always starts off. The album
+cover is one point in that space, not the starting point.
 
 - **Top line** and **Bottom lines** start empty. Type your own, one line per row in the textarea.
 - **Randomise** rolls a new sun — sliders, seed and toggles together.
 - **Reset to cover** goes the other way: the original КИНО / ЗВЕЗДА ПО ИМЕНИ СОЛНЦЕ artwork and every
   documented default.
 - **Pause** freezes the animation so you can grab a specific frame.
+- **Copy link** puts the current artwork on your clipboard as a URL.
+
+## Sharing
+
+The entire artwork lives in the URL hash — every slider, both text fields, the typeface, all four
+colours, the toggles, and the geometry seed. The address bar rewrites itself as you work
+(`history.replaceState`, debounced, so a slider drag does not flood browser history), and opening
+that URL rebuilds the identical sun.
+
+```
+#s=1.7,-0.44,9,0.6,…&c=7fd4ff,0a0a0a,f4f2ea,00ff88&d=76032&t=Oswald&f=gw&a=…&b=…
+```
+
+`s` is the slider vector in a fixed order, `c` the four colours, `d` the seed, `t` the typeface,
+`f` the toggle flags (`c` caps, `g` gradient, `w` liquid hole), and `a` / `b` the two text fields.
+Values are clamped to each slider's range on the way in and a malformed hash falls back to a random
+sun, so a truncated or hand-edited link degrades instead of breaking.
 
 ### Controls
 

@@ -144,6 +144,7 @@ input[type=range]{height:20px}
   </div>
   <div class="lsh">Export</div>
   <div class="lsb">
+    <button id="bshare" type="button">Copy link</button>
     <button id="bsvg" type="button">Export SVG</button>
     <button id="bpng" type="button">Export PNG</button>
     <button id="bgif" type="button">Export GIF</button>
@@ -167,11 +168,11 @@ var capturing=false,dith=false;
 var keys=['speed','spin','flames','length','sharp','branch','jag','sweep','drops','dsize','sliver','orbit','ripple','hole','glow','scale','offy','tsize','ttrack','ty','bsize','btrack','lead','by'];
 var DEF={speed:1,spin:0.06,flames:15,length:0.72,sharp:0.68,branch:0.62,jag:0.5,sweep:0.28,drops:6,dsize:0.34,sliver:0.78,orbit:0.3,ripple:0.35,hole:0.44,glow:0,scale:0.79,offy:-0.02,tsize:0.072,ttrack:0.14,ty:0.095,bsize:0.046,btrack:0.1,lead:1.26,by:0.775},P={};
 function fmt(k,v){if(k==='flames'||k==='drops')return String(Math.round(v));if(k==='speed')return v.toFixed(1)+'\u00d7';if(k==='spin')return v.toFixed(2);return Math.round(v*100)+'%';}
-function sync(){for(var i=0;i<keys.length;i++){var k=keys[i];P[k]=parseFloat(document.getElementById(k).value);document.getElementById(k+'o').textContent=fmt(k,P[k]);}}
+function sync(){for(var i=0;i<keys.length;i++){var k=keys[i];P[k]=parseFloat(document.getElementById(k).value);document.getElementById(k+'o').textContent=fmt(k,P[k]);}pushURL();}
 for(var z=0;z<keys.length;z++)document.getElementById(keys[z]).addEventListener('input',sync);
 function seed(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
-var SL=[],DR=[],JG=[];
-function build(sd){var r=seed(sd),i,k;SL=[];DR=[];JG=[];
+var SL=[],DR=[],JG=[],SEED=514422;
+function build(sd){var r=seed(sd),i,k;SEED=sd;SL=[];DR=[];JG=[];
  for(i=0;i<24;i++){var kids=[],nk=Math.floor(r()*3.2);
   for(k=0;k<nk;k++)kids.push({off:(r()<0.5?-1:1)*(0.2+r()*0.5),amp:0.18+r()*0.5,w:0.26+r()*0.4,pul:0.2+r()*0.6,po:r()*TAU});
   SL.push({j:(r()-0.5)*0.75,rj:r(),m:{off:0,amp:0.3+r()*0.7,w:0.5+r()*0.8,pul:0.14+r()*0.5,po:r()*TAU},k:kids});}
@@ -191,10 +192,57 @@ function shuffle(){
   if(k==='spin'&&Math.random()<0.5)v=-v;
   document.getElementById(k).value=v;}
  document.getElementById('glow').value=Math.random()<0.55?0:rnd(0.12,0.42);
- grad=Math.random()<0.3;wob=Math.random()<0.35;
+ grad=Math.random()<0.3;wob=false;
  document.getElementById('bgrad').textContent='Gradient: '+(grad?'on':'off');
  document.getElementById('bwob').textContent='Liquid hole: '+(wob?'on':'off');
  build(Math.floor(Math.random()*1e6));sync();}
+
+/* --- the whole artwork lives in the URL hash, so any state is a link --- */
+function stateStr(){
+ var p=[],i;
+ for(i=0;i<keys.length;i++)p.push(+parseFloat(document.getElementById(keys[i]).value).toFixed(3));
+ return 's='+p.join(',')
+  +'&c='+['c1','c2','c3','c4'].map(function(id){return val(id).replace('#','');}).join(',')
+  +'&d='+SEED
+  +'&t='+encodeURIComponent(val('tfont'))
+  +'&f='+(caps?'c':'')+(grad?'g':'')+(wob?'w':'')
+  +'&a='+encodeURIComponent(val('ttop'))
+  +'&b='+encodeURIComponent(val('tbot'));}
+function shareURL(){return location.origin+location.pathname+'#'+stateStr();}
+var urlTimer=null;
+function pushURL(){
+ if(urlTimer)clearTimeout(urlTimer);
+ /* Debounced: a slider drag would otherwise trip Safari's replaceState limit. */
+ urlTimer=setTimeout(function(){try{history.replaceState(null,'','#'+stateStr());}catch(e){}},400);}
+function applyState(h){
+ try{
+  if(!h)return false;
+  var q={},parts=h.replace(/^#/,'').split('&'),i;
+  for(i=0;i<parts.length;i++){var e=parts[i].indexOf('=');if(e>0)q[parts[i].slice(0,e)]=parts[i].slice(e+1);}
+  if(!q.s)return false;
+  var nums=q.s.split(','),ok=false;
+  for(i=0;i<keys.length&&i<nums.length;i++){
+   var el=document.getElementById(keys[i]),v=parseFloat(nums[i]);
+   if(!isFinite(v))continue;
+   el.value=Math.min(parseFloat(el.max),Math.max(parseFloat(el.min),v));ok=true;}
+  if(!ok)return false;
+  if(q.c){var cs=q.c.split(',');
+   ['c1','c2','c3','c4'].forEach(function(id,j){
+    if(cs[j]&&/^[0-9a-fA-F]{6}$/.test(cs[j]))document.getElementById(id).value='#'+cs[j].toLowerCase();});}
+  var f=q.f||'';
+  caps=f.indexOf('c')>=0;grad=f.indexOf('g')>=0;wob=f.indexOf('w')>=0;
+  document.getElementById('bcaps').textContent='Caps: '+(caps?'on':'off');
+  document.getElementById('bgrad').textContent='Gradient: '+(grad?'on':'off');
+  document.getElementById('bwob').textContent='Liquid hole: '+(wob?'on':'off');
+  if(q.t){var fv=decodeURIComponent(q.t),sel=document.getElementById('tfont');
+   for(i=0;i<sel.options.length;i++)if(sel.options[i].value===fv)sel.value=fv;}
+  if(q.a!==undefined)document.getElementById('ttop').value=decodeURIComponent(q.a);
+  if(q.b!==undefined)document.getElementById('tbot').value=decodeURIComponent(q.b);
+  var sd=parseInt(q.d,10);
+  build(isFinite(sd)?sd:514422);
+  sync();
+  return true;
+ }catch(e){return false;}}
 function hx(h){h=h.replace('#','');return[parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];}
 function mx(c,w,a){return'rgb('+Math.round(c[0]+(w[0]-c[0])*a)+','+Math.round(c[1]+(w[1]-c[1])*a)+','+Math.round(c[2]+(w[2]-c[2])*a)+')';}
 function val(id){return document.getElementById(id).value;}
@@ -554,15 +602,27 @@ document.getElementById('bdith').addEventListener('click',function(){
 
 document.getElementById('bpause').addEventListener('click',function(){paused=!paused;this.innerHTML='<i class="ti '+(paused?'ti-player-play':'ti-player-pause')+'" style="font-size:16px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>'+(paused?'Play':'Pause');});
 document.getElementById('brand').addEventListener('click',shuffle);
-document.getElementById('bcaps').addEventListener('click',function(){caps=!caps;this.textContent='Caps: '+(caps?'on':'off');});
-document.getElementById('bgrad').addEventListener('click',function(){grad=!grad;this.textContent='Gradient: '+(grad?'on':'off');});
-document.getElementById('bwob').addEventListener('click',function(){wob=!wob;this.textContent='Liquid hole: '+(wob?'on':'off');});
+document.getElementById('bcaps').addEventListener('click',function(){caps=!caps;this.textContent='Caps: '+(caps?'on':'off');pushURL();});
+document.getElementById('bgrad').addEventListener('click',function(){grad=!grad;this.textContent='Gradient: '+(grad?'on':'off');pushURL();});
+document.getElementById('bwob').addEventListener('click',function(){wob=!wob;this.textContent='Liquid hole: '+(wob?'on':'off');pushURL();});
+['c1','c2','c3','c4','ttop','tbot','tfont'].forEach(function(id){
+ document.getElementById(id).addEventListener('input',pushURL);
+ document.getElementById(id).addEventListener('change',pushURL);});
+document.getElementById('bshare').addEventListener('click',function(){
+ var u=shareURL();
+ try{history.replaceState(null,'','#'+stateStr());}catch(e){}
+ if(navigator.clipboard&&navigator.clipboard.writeText)
+  navigator.clipboard.writeText(u).then(function(){say('link copied');},function(){say('copy blocked — the address bar has it');});
+ else say('the address bar has the link');});
+window.addEventListener('hashchange',function(){applyState(location.hash);});
 document.getElementById('breset').addEventListener('click',function(){for(var i=0;i<keys.length;i++)document.getElementById(keys[i]).value=DEF[keys[i]];
  document.getElementById('c1').value='#f2d14b';document.getElementById('c2').value='#0a0a0a';document.getElementById('c3').value='#f4f2ea';document.getElementById('c4').value='#e01b1b';
  document.getElementById('ttop').value='КИНО';document.getElementById('tbot').value='ЗВЕЗДА\nПО ИМЕНИ\nСОЛНЦЕ';document.getElementById('tfont').value='Montserrat';
  grad=false;wob=false;caps=true;dith=false;document.getElementById('bgrad').textContent='Gradient: off';document.getElementById('bwob').textContent='Liquid hole: off';document.getElementById('bcaps').textContent='Caps: on';document.getElementById('bdith').textContent='Dither: off';
  build(514422);sync();});
-window.addEventListener('resize',fit);shuffle();fit();requestAnimationFrame(frame);
+window.addEventListener('resize',fit);
+if(!applyState(location.hash))shuffle();
+fit();requestAnimationFrame(frame);
 })();
 </script>
 </div>
