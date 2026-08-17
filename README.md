@@ -13,7 +13,7 @@ suns.
 ## What it's after
 
 The defaults are tuned to land near the sleeve of **Звезда по имени Солнце** ("A Star Called the
-Sun"), released 29 August 1989 — the last KINO album to appear in Viktor Tsoi's lifetime. He died on
+Sun"), released 29 August 1989 — the last Кино album to appear in Viktor Tsoi's lifetime. He died on
 15 August 1990, not quite a year later.
 
 Nothing here is traced from that cover: the sun is generated from scratch on every frame, and
@@ -23,7 +23,7 @@ Nothing here is traced from that cover: the sun is generated from scratch on eve
 - [Spotify](https://open.spotify.com/album/0Yu3psNuEMTRM7tzHQgqfJ)
 - [Apple Music](https://music.apple.com/us/album/1333017666)
 - [Discogs](https://www.discogs.com/master/90723)
-- [KINO](https://en.wikipedia.org/wiki/Kino_(band)) · [Viktor Tsoi](https://en.wikipedia.org/wiki/Viktor_Tsoi)
+- [Кино](https://en.wikipedia.org/wiki/Kino_(band)) · [Viktor Tsoi](https://en.wikipedia.org/wiki/Viktor_Tsoi)
 
 ## Usage
 
