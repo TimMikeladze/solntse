@@ -32,7 +32,7 @@
 "isAccessibleForFree":true,
 "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},
 "about":{"@type":"MusicAlbum","name":"Звезда по имени Солнце","alternateName":"Zvezda po imeni Solntse","datePublished":"1989-08-29","byArtist":{"@type":"MusicGroup","name":"Кино","alternateName":"Kino","sameAs":"https://en.wikipedia.org/wiki/Kino_(band)"},"sameAs":"https://en.wikipedia.org/wiki/Zvezda_po_imeni_Solntse"},
-"featureList":["Generated sun artwork","Editable heading and title type","Shareable links that carry the whole artwork","Full-screen wall of many suns at once","Per-tile editing on the wall","SVG export","PNG export","Animated GIF export","60fps video export","Wall export as image or animation"]}
+"featureList":["Generated sun artwork","Editable heading and title type","Shareable links that carry the whole artwork","Full-screen wall of many suns at once","Per-tile editing on the wall","MIDI file import","Music-driven animation","Built-in MIDI playback","SVG export","PNG export","Animated GIF export","60fps video export with sound","Wall export as image or animation"]}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -198,6 +198,25 @@ input[type=range]{height:20px}
     <span style="font-size:13px;color:var(--text-secondary)">Top</span><input type="color" id="c3" value="#f4f2ea" aria-label="Top text colour">
     <span style="font-size:13px;color:var(--text-secondary)">Title</span><input type="color" id="c4" value="#e01b1b" aria-label="Title colour">
   </div>
+  <div class="lsh">MIDI</div>
+  <div class="lsb">
+    <input type="file" id="mfile" accept=".mid,.midi,audio/midi,audio/x-midi" hidden>
+    <button id="mload" type="button"><i class="ti ti-music" style="font-size:16px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>Load MIDI…</button>
+    <button id="mplay" type="button" disabled><i class="ti ti-player-play" style="font-size:16px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>Play</button>
+    <button id="mstop" type="button" disabled>Stop</button>
+    <button id="mloop" type="button">Loop: on</button>
+    <button id="msound" type="button">Sound: on</button>
+    <button id="mcol" type="button">Colour pumps: on</button>
+    <button id="mclear" type="button" disabled>Clear</button>
+    <span id="mstat" role="status" style="font-size:13px;color:var(--text-muted)">drop a .mid on the page, or load one</span>
+  </div>
+  <div class="lsr" style="margin-top:8px"><span class="l">Position</span><input type="range" id="mpos" min="0" max="1" step="0.0005" value="0" disabled aria-label="Playback position"><span class="v" id="mposo" style="min-width:86px;font-variant-numeric:tabular-nums">0:00 / 0:00</span></div>
+  <div class="lsc">
+    <div class="lsr"><span class="l">Reaction</span><input type="range" id="mamt" min="0" max="1" step="0.01" value="0.7"><span class="v" id="mamto">70%</span></div>
+    <div class="lsr"><span class="l">Note tail</span><input type="range" id="mrel" min="0.05" max="1.5" step="0.05" value="0.35"><span class="v" id="mrelo">0.35s</span></div>
+    <div class="lsr"><span class="l">Pulse</span><input type="range" id="mpulse" min="0" max="1" step="0.01" value="0.7"><span class="v" id="mpulseo">70%</span></div>
+    <div class="lsr"><span class="l">Volume</span><input type="range" id="mvol" min="0" max="1" step="0.01" value="0.6"><span class="v" id="mvolo">60%</span></div>
+  </div>
   <div class="lsh">Export</div>
   <div class="lsb">
     <button id="bshare" type="button">Copy link</button>
@@ -359,6 +378,8 @@ function hx(h){var v=HXC[h];if(v)return v;
  v=[parseInt(s.substr(0,2),16),parseInt(s.substr(2,2),16),parseInt(s.substr(4,2),16)];
  HXC[h]=v;return v;}
 function mx(c,w,a){return'rgb('+Math.round(c[0]+(w[0]-c[0])*a)+','+Math.round(c[1]+(w[1]-c[1])*a)+','+Math.round(c[2]+(w[2]-c[2])*a)+')';}
+function mixA(c,w,a){return[Math.round(c[0]+(w[0]-c[0])*a),Math.round(c[1]+(w[1]-c[1])*a),Math.round(c[2]+(w[2]-c[2])*a)];}
+function hex3(c){return'#'+[0,1,2].map(function(i){return('0'+c[i].toString(16)).slice(-2);}).join('');}
 /* Every value the renderer reads comes through here, so the wall can point a
    tile at its own colours and type without touching the editor's controls. */
 var OV=null;
@@ -429,8 +450,10 @@ function layout(){var H=VS,out=[],i,tp=val('ttop'),bp=val('tbot').split('\n');
  var bpx=P.bsize*H,ly=VY+P.by*H;
  for(i=0;i<bp.length;i++)put(bp[i],ly+i*bpx*P.lead+bpx*0.5,bpx,P.btrack*bpx,val('c4'));
  return out;}
-function draw(t){derive();
+function drawRaw(t){derive();
  var c1=hx(val('c1')),c2=hx(val('c2')),bg='rgb('+c2[0]+','+c2[1]+','+c2[2]+')',i,j,k;
+ /* A note-on lifts the lava toward white for as long as the pulse lasts. */
+ if(MPUMP>0)c1=mixA(c1,[255,255,255],MPUMP);
  /* The wall has already laid the ground for every tile in one fill, so painting
     it again per tile would rasterise the whole screen a second time. */
  if(!NOBG){ctx.clearRect(VX,VY,VS,VS);ctx.fillStyle=bg;ctx.fillRect(VX,VY,VS,VS);}
@@ -455,10 +478,24 @@ function draw(t){derive();
  if(!val('ttop')&&!val('tbot'))return;
  var L=layout();ctx.textAlign='left';ctx.textBaseline='alphabetic';
  for(i=0;i<L.length;i++){ctx.font=fontCss(L[i].px);ctx.fillStyle=L[i].col;ctx.fillText(L[i].ch,L[i].x,L[i].y);}}
+/* With a MIDI file loaded the sliders stop being the whole story: the sun is
+   drawn through a copy of P that the music has bent. Everything downstream —
+   the wall, the SVG writer, every exporter — sees the bent numbers and needs to
+   know nothing about MIDI. One scratch object is reused because a wall calls
+   this once per tile per frame. */
+function draw(t){
+ if(!MIDION)return drawRaw(t);
+ var sv=P,k;
+ for(k in sv)MSC[k]=sv[k];
+ midiMod(MSC);P=MSC;
+ try{drawRaw(t);}finally{P=sv;}}
 var t0=performance.now(),T=0,TW=0;
 function frame(now){var dt=Math.min(0.05,(now-t0)/1000);t0=now;
  if(!paused){T+=dt*P.speed;TW+=dt;}
- if(!capturing){if(wallOn)wallDraw();else draw(T);}
+ /* The transport keeps running through a video capture — that one records in
+    real time and the sound is going out with it. */
+ midiTick(dt);
+ if(!capturing){MSET(MPOS);if(wallOn)wallDraw();else draw(T);}
  requestAnimationFrame(frame);}
 
 /* ---------- wall: one independent sun per tile, filling the screen ---------- */
@@ -726,6 +763,339 @@ window.addEventListener('keydown',function(e){
  else if(e.key==='['||e.key==='{')wallGrid(wallCols,wallRows-1);
  else return;
  e.preventDefault();barPoke();});
+/* ---------- MIDI: a file becomes the envelope the sun is drawn through ---------- */
+/* The file is parsed to notes in seconds, the notes are rendered once into a
+   fixed-rate analysis buffer, and everything after that reads the buffer by song
+   time. That is what makes an export reproducible: a frame at song second 12.5
+   is the same sun whether it is drawn live, encoded into a GIF over two minutes,
+   or scrubbed to by hand. */
+var MIDI=null,MNOTES=[],MDUR=0,MNAME='',MPOS=0,MPLAY=false,MHOLD=false,MNOW=0;
+var MAMT=0.7,MREL=0.35,MPULSE=0.7,MVOL=0.6,MLOOP=true,MSOUND=true,MCOL=true;
+var MIDION=false,MPUMP=0,MSC={},RANGE={},MA=null,AR=100;
+var MB={e:0,b:0,m:0,h:0,k:0,p:0.5};
+for(var qr=0;qr<keys.length;qr++){var er=document.getElementById(keys[qr]);
+ RANGE[keys[qr]]=[parseFloat(er.min),parseFloat(er.max)];}
+function mel(id){return document.getElementById(id);}
+
+function parseMIDI(buf){
+ var u8=new Uint8Array(buf),dv=new DataView(buf),p=0;
+ function tag(){var s=String.fromCharCode(u8[p],u8[p+1],u8[p+2],u8[p+3]);p+=4;return s;}
+ function u32(){var v=dv.getUint32(p);p+=4;return v;}
+ function u16(){var v=dv.getUint16(p);p+=2;return v;}
+ function vlq(){var v=0,c,g=0;do{c=u8[p++];v=(v<<7)|(c&0x7f);}while((c&0x80)&&p<u8.length&&++g<4);return v;}
+ if(u8.length<14||tag()!=='MThd')throw new Error('not a MIDI file');
+ var hl=u32();u16();var ntrk=u16(),div=u16();p+=Math.max(0,hl-6);
+ /* SMPTE division counts real time directly, so tempo never enters into it. */
+ var smpte=(div&0x8000)?1/(((256-(div>>8))||25)*((div&0xff)||1)):0;
+ var tpq=smpte?1:(div||480),tempos=[],raw=[],name='',ti,q;
+ for(ti=0;ti<ntrk&&p+8<=u8.length;ti++){
+  var id=tag(),len=u32(),end=Math.min(u8.length,p+len);
+  if(id!=='MTrk'){p=end;continue;}
+  var tick=0,rs=0,open={},key;
+  while(p<end){
+   tick+=vlq();
+   var b=u8[p];
+   if(b&0x80){rs=b;p++;}else b=rs;
+   if(!b)break;
+   if(b===0xff){var mt=u8[p++],ml=vlq();
+    if(mt===0x51&&ml===3)tempos.push([tick,(u8[p]<<16)|(u8[p+1]<<8)|u8[p+2]]);
+    else if(mt===0x03&&!name&&ml&&ml<64){var s='';
+     for(q=0;q<ml;q++)s+=String.fromCharCode(u8[p+q]);name=s.replace(/[^\x20-\x7e]/g,'').trim();}
+    p+=ml;continue;}
+   if(b===0xf0||b===0xf7){p+=vlq();continue;}
+   var ty=b&0xf0,ch=b&0x0f;
+   if(ty===0x80||ty===0x90){var n=u8[p],v=u8[p+1];p+=2;key=ch*128+n;
+    /* A note-on at velocity zero is a note-off — half the files in the world
+       never send 0x80 at all. */
+    if(ty===0x90&&v>0)(open[key]||(open[key]=[])).push([tick,v]);
+    else{q=open[key];if(q&&q.length){var st=q.shift();raw.push({a:st[0],b:tick,n:n,v:st[1],ch:ch});}}
+    continue;}
+   if(ty===0xc0||ty===0xd0){p+=1;continue;}
+   p+=2;}
+  for(key in open){var ar=open[key];
+   for(q=0;q<ar.length;q++)raw.push({a:ar[q][0],b:tick,n:key%128,v:ar[q][1],ch:(key/128)|0});}
+  p=end;}
+ if(!raw.length)throw new Error('no notes in that file');
+ tempos.sort(function(x,y){return x[0]-y[0];});
+ if(!tempos.length||tempos[0][0]>0)tempos.unshift([0,500000]);
+ var acc=[0],i;
+ for(i=1;i<tempos.length;i++)acc[i]=acc[i-1]+(tempos[i][0]-tempos[i-1][0])*(tempos[i-1][1]/1e6/tpq);
+ function sec(tk){
+  if(smpte)return tk*smpte;
+  var lo=0,hi=tempos.length-1;
+  while(lo<hi){var md=(lo+hi+1)>>1;if(tempos[md][0]<=tk)lo=md;else hi=md-1;}
+  return acc[lo]+(tk-tempos[lo][0])*(tempos[lo][1]/1e6/tpq);}
+ var notes=[],dur=0;
+ for(i=0;i<raw.length;i++){var r=raw[i],a0=sec(r.a),a1=sec(r.b);
+  if(!isFinite(a0)||!isFinite(a1))continue;
+  if(a1<=a0)a1=a0+0.06;
+  notes.push({t0:a0,t1:a1,n:r.n,v:r.v,ch:r.ch});
+  if(a1>dur)dur=a1;}
+ if(!notes.length)throw new Error('no notes in that file');
+ notes.sort(function(x,y){return x.t0-y.t0;});
+ return{notes:notes,dur:dur,name:name};}
+
+function pct(a,f){var v=[],i;
+ for(i=0;i<a.length;i++)if(a[i]>0.0001)v.push(a[i]);
+ if(!v.length)return 1;
+ v.sort(function(x,y){return x-y;});
+ return v[Math.min(v.length-1,Math.floor(v.length*f))]||1;}
+/* One pass over the notes lays down energy, three pitch bands, a note-on pulse
+   and a pitch centroid at a hundred samples a second. Bands are split at the
+   file's own pitch terciles rather than at fixed octaves, so a solo piano piece
+   still has a low band to beat against and a bass line still has a top. */
+function analyse(){
+ if(!MNOTES.length){MA=null;return;}
+ var len=Math.ceil((MDUR+MREL+1)*AR)+2,i,j;
+ var e=new Float32Array(len),b=new Float32Array(len),m=new Float32Array(len),
+     h=new Float32Array(len),k=new Float32Array(len),ps=new Float32Array(len);
+ var hist=new Float64Array(128),lo=127,hi=0,nt;
+ for(i=0;i<MNOTES.length;i++){nt=MNOTES[i];hist[nt.n]+=nt.t1-nt.t0+0.05;
+  if(nt.n<lo)lo=nt.n;if(nt.n>hi)hi=nt.n;}
+ if(hi<=lo)hi=lo+1;
+ var tot=0;for(i=0;i<128;i++)tot+=hist[i];
+ var c1=lo,c2=hi,run=0;
+ for(i=0;i<128;i++){run+=hist[i];if(run>=tot/3){c1=i;break;}}
+ run=0;for(i=0;i<128;i++){run+=hist[i];if(run>=tot*2/3){c2=Math.max(c1+1,i);break;}}
+ var atk=Math.max(1,Math.round(0.012*AR)),rl=Math.max(2,Math.round(MREL*AR)),ol=Math.max(2,Math.round(0.16*AR));
+ for(i=0;i<MNOTES.length;i++){
+  nt=MNOTES[i];
+  var a=0.3+0.7*(nt.v/127),i0=Math.round(nt.t0*AR),i1=Math.max(i0+1,Math.round(nt.t1*AR));
+  var band=nt.n<=c1?b:(nt.n<=c2?m:h),np=(nt.n-lo)/(hi-lo),env;
+  for(j=i0;j<i1&&j<len;j++){env=a*Math.min(1,(j-i0+1)/atk);e[j]+=env;band[j]+=env;ps[j]+=env*np;}
+  for(j=i1;j<i1+rl&&j<len;j++){env=a*Math.pow(0.0016,(j-i1)/rl);e[j]+=env;band[j]+=env;ps[j]+=env*np;}
+  for(j=i0;j<i0+ol&&j<len;j++)k[j]+=a*(1-(j-i0)/ol);}
+ /* Normalised so a sparse file and a dense one both land in the same range, and
+    a band that carries almost nothing cannot be amplified into a false beat. */
+ var ne=pct(e,0.95),nk=pct(k,0.95),fl=0.25*ne;
+ var nb=Math.max(pct(b,0.95),fl),nm=Math.max(pct(m,0.95),fl),nh=Math.max(pct(h,0.95),fl);
+ for(i=0;i<len;i++){
+  ps[i]=e[i]>0.0001?ps[i]/e[i]:0.5;
+  e[i]=Math.min(1.4,e[i]/ne);b[i]=Math.min(1.4,b[i]/nb);
+  m[i]=Math.min(1.4,m[i]/nm);h[i]=Math.min(1.4,h[i]/nh);k[i]=Math.min(1.4,k[i]/nk);}
+ MA={e:e,b:b,m:m,h:h,k:k,p:ps,len:len};}
+/* Sampling is by song time, not by frame, and it happens once a frame rather
+   than once a tile. */
+function MSET(st){
+ MNOW=st;
+ if(!MA){MB.e=MB.b=MB.m=MB.h=MB.k=0;MB.p=0.5;return;}
+ var x=st*AR,i=Math.floor(x),f=x-i,L=MA.len;
+ if(!(i>=0)){i=0;f=0;}
+ if(i>=L-1){i=L-1;f=0;}
+ var j=Math.min(L-1,i+1);
+ MB.e=MA.e[i]+(MA.e[j]-MA.e[i])*f;MB.b=MA.b[i]+(MA.b[j]-MA.b[i])*f;
+ MB.m=MA.m[i]+(MA.m[j]-MA.m[i])*f;MB.h=MA.h[i]+(MA.h[j]-MA.h[i])*f;
+ MB.k=MA.k[i]+(MA.k[j]-MA.k[i])*f;MB.p=MA.p[i]+(MA.p[j]-MA.p[i])*f;}
+function clampK(k,v){var r=RANGE[k];return r?Math.min(r[1],Math.max(r[0],v)):v;}
+/* Spin and flow speed are deliberately left alone: both multiply t inside
+   outerR, so nudging either does not brighten the sun, it teleports the flames. */
+function midiMod(o){
+ var A=MAMT,K=MB.k*MPULSE;
+ function ad(k,v){o[k]=clampK(k,o[k]+v*A);}
+ ad('scale',0.07*MB.b+0.03*MB.e+0.05*K);
+ ad('hole',-0.05*MB.b-0.03*K);
+ ad('length',0.26*MB.e+0.12*K);
+ ad('branch',0.32*MB.m);
+ ad('jag',0.42*MB.h);
+ ad('ripple',0.45*MB.e);
+ ad('sweep',0.22*K);
+ ad('sharp',0.18*K);
+ ad('dsize',0.22*MB.h+0.1*K);
+ ad('orbit',0.2*MB.e+0.1*MB.p);
+ ad('glow',0.55*K+0.15*MB.e);
+ ad('drops',9*Math.min(1,MB.e));
+ MPUMP=MCOL?Math.min(0.62,(0.45*K+0.14*MB.e)*A):0;}
+function midiLive(){
+ MIDION=!!MA&&MAMT>0;
+ if(!MIDION)MPUMP=0;}
+
+/* --- sound: a small synth, because a visualiser with nothing to hear is a
+   slideshow. Notes are scheduled a little ahead of the audio clock rather than
+   all at once, so a ten-minute file does not build ten thousand nodes. --- */
+var actx=null,mgain=null,mcomp=null,mdest=null,nbuf=null,LIVEN=[],schedIdx=0,schedT=null,aud0=0,wasLive=false;
+function audioInit(){
+ if(actx)return actx;
+ var AC=window.AudioContext||window.webkitAudioContext;
+ if(!AC)return null;
+ actx=new AC();
+ mgain=actx.createGain();mgain.gain.value=MVOL;
+ mcomp=actx.createDynamicsCompressor();
+ mgain.connect(mcomp);mcomp.connect(actx.destination);
+ mdest=actx.createMediaStreamDestination();mcomp.connect(mdest);
+ return actx;}
+function noiseBuf(){
+ if(nbuf)return nbuf;
+ var n=Math.floor(actx.sampleRate*0.3);nbuf=actx.createBuffer(1,n,actx.sampleRate);
+ var d=nbuf.getChannelData(0),i;
+ for(i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
+ return nbuf;}
+function freq(n){return 440*Math.pow(2,(n-69)/12);}
+function voice(nt,at){
+ var d=Math.min(6,Math.max(0.06,nt.t1-nt.t0)),v=nt.v/127,g=actx.createGain();
+ if(nt.ch===9){
+  /* Channel 10 is percussion by convention: pitch is which drum, not which
+     note, so it is played as a filtered noise burst. */
+  var src=actx.createBufferSource();src.buffer=noiseBuf();
+  var f=actx.createBiquadFilter();f.type='bandpass';
+  f.frequency.value=Math.min(9000,Math.max(60,freq(nt.n)*1.6));f.Q.value=1.1;
+  g.gain.setValueAtTime(0.0001,at);
+  g.gain.linearRampToValueAtTime(v*0.5,at+0.004);
+  g.gain.exponentialRampToValueAtTime(0.0004,at+0.17);
+  src.connect(f);f.connect(g);g.connect(mgain);
+  src.start(at);src.stop(at+0.25);LIVEN.push(src);return;}
+ var o=actx.createOscillator(),o2=actx.createOscillator(),pk=v*0.15;
+ o.type='triangle';o.frequency.value=freq(nt.n);
+ o2.type='sine';o2.frequency.value=freq(nt.n-12);
+ g.gain.setValueAtTime(0.0001,at);
+ g.gain.linearRampToValueAtTime(pk,at+0.014);
+ g.gain.setTargetAtTime(pk*0.6,at+0.014,0.3);
+ g.gain.setTargetAtTime(0.0001,at+d,0.09);
+ o.connect(g);o2.connect(g);g.connect(mgain);
+ o.start(at);o2.start(at);o.stop(at+d+0.7);o2.stop(at+d+0.7);
+ LIVEN.push(o,o2);}
+function killVoices(){
+ for(var i=0;i<LIVEN.length;i++){try{LIVEN[i].stop();}catch(e){}}
+ LIVEN.length=0;}
+function seekIdx(pos){
+ var lo=0,hi=MNOTES.length;
+ while(lo<hi){var md=(lo+hi)>>1;if(MNOTES[md].t0<pos)lo=md+1;else hi=md;}
+ return lo;}
+function pump(){
+ if(!MPLAY||!MSOUND||!actx)return;
+ var now=actx.currentTime-aud0,horizon=now+0.55;
+ while(schedIdx<MNOTES.length&&MNOTES[schedIdx].t0<horizon){
+  var nt=MNOTES[schedIdx++];
+  if(nt.t0>=now-0.06)voice(nt,aud0+nt.t0);}
+ if(LIVEN.length>900)LIVEN.splice(0,LIVEN.length-900);}
+function audioStart(pos){
+ if(!MSOUND)return;
+ if(!audioInit())return;
+ if(actx.state==='suspended')actx.resume();
+ killVoices();
+ wasLive=actx.state==='running';
+ aud0=actx.currentTime+0.06-pos;
+ schedIdx=seekIdx(pos);
+ pump();
+ if(schedT)clearInterval(schedT);
+ schedT=setInterval(pump,110);}
+function audioStop(){
+ wasLive=false;
+ if(schedT){clearInterval(schedT);schedT=null;}
+ killVoices();}
+
+function fmtT(s){s=Math.max(0,s);var m=Math.floor(s/60);
+ return m+':'+('0'+Math.floor(s%60)).slice(-2);}
+function midiStat(m){mel('mstat').textContent=m;}
+function midiClock(){
+ mel('mposo').textContent=fmtT(MPOS)+' / '+fmtT(MDUR);
+ if(!mdrag)mel('mpos').value=MDUR>0?MPOS/MDUR:0;}
+/* Position comes off the audio clock whenever there is sound, so the sun and the
+   music cannot drift; with sound off it is just wall time. */
+function midiTick(dt){
+ if(!MIDI||!MPLAY||mdrag)return;
+ /* A context the browser has not let run yet has a clock that does not move, so
+    the picture falls back to wall time and re-anchors to the audio the moment
+    sound actually starts. Silent is a state to keep animating through, not to
+    stop in. */
+ var live=MSOUND&&actx&&actx.state==='running';
+ if(live&&!wasLive){audioStart(MPOS);return;}
+ wasLive=live;
+ MPOS=live?(actx.currentTime-aud0):(MPOS+dt);
+ if(MPOS>=MDUR+0.35){
+  if(MLOOP)midiSeek(0);
+  else{midiPause();midiSeek(0);}}
+ midiClock();}
+function midiPlay(){
+ if(!MIDI||MPLAY)return;
+ MPLAY=true;
+ if(MPOS>=MDUR-0.02)MPOS=0;
+ audioStart(MPOS);
+ mel('mplay').innerHTML='<i class="ti ti-player-pause" style="font-size:16px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>Pause';}
+function midiPause(){
+ if(!MPLAY)return;
+ MPLAY=false;audioStop();
+ mel('mplay').innerHTML='<i class="ti ti-player-play" style="font-size:16px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>Play';}
+function midiSeek(pos){
+ MPOS=Math.max(0,Math.min(MDUR,pos));
+ if(MPLAY)audioStart(MPOS);
+ MSET(MPOS);midiClock();}
+/* PNG and GIF encode far slower than real time, so the transport is frozen for
+   the duration rather than left to run on under them. Video records in real
+   time and keeps playing. */
+function midiHold(){MHOLD=MPLAY;if(MPLAY)midiPause();}
+function midiRelease(){if(MHOLD){MHOLD=false;midiSeek(MPOS);midiPlay();}}
+function midiLoad(buf,fname){
+ var m;
+ try{m=parseMIDI(buf);}
+ catch(e){midiStat('could not read that file: '+e.message);return;}
+ midiPause();
+ MIDI=m;MNOTES=m.notes;MDUR=m.dur;MNAME=m.name||(fname||'').replace(/\.[^.]+$/,'');
+ MPOS=0;analyse();midiLive();
+ ['mplay','mstop','mclear','mpos'].forEach(function(id){mel(id).disabled=false;});
+ midiStat((MNAME?MNAME+' · ':'')+MNOTES.length+' notes · '+fmtT(MDUR));
+ /* A file was just handed over: it plays. A frozen sun would be the wrong
+    answer to that, so the global pause lifts with it. */
+ if(paused)mel('bpause').click();
+ midiClock();midiSeek(0);midiPlay();}
+function midiClear(){
+ midiPause();
+ MIDI=null;MNOTES=[];MDUR=0;MPOS=0;MA=null;MIDION=false;MPUMP=0;
+ ['mplay','mstop','mclear','mpos'].forEach(function(id){mel(id).disabled=true;});
+ midiStat('drop a .mid on the page, or load one');midiClock();}
+function readFile(f){
+ if(!f)return;
+ var r=new FileReader();
+ r.onload=function(){midiLoad(r.result,f.name);};
+ r.onerror=function(){midiStat('could not read that file');};
+ r.readAsArrayBuffer(f);}
+/* The audio context is opened on the gesture that picks the file, not on the
+   FileReader callback that follows it — by then the gesture has expired and the
+   browser leaves the context suspended. */
+function audioUnlock(){var a=audioInit();if(a&&a.state==='suspended')a.resume();}
+mel('mload').addEventListener('click',function(){audioUnlock();mel('mfile').click();});
+mel('mfile').addEventListener('change',function(){readFile(this.files&&this.files[0]);this.value='';});
+mel('mplay').addEventListener('click',function(){
+ if(MPLAY)midiPause();
+ else{if(paused)mel('bpause').click();midiPlay();}});
+mel('mstop').addEventListener('click',function(){midiPause();midiSeek(0);});
+mel('mclear').addEventListener('click',midiClear);
+mel('mloop').addEventListener('click',function(){MLOOP=!MLOOP;this.textContent='Loop: '+(MLOOP?'on':'off');});
+mel('msound').addEventListener('click',function(){
+ MSOUND=!MSOUND;this.textContent='Sound: '+(MSOUND?'on':'off');
+ if(MPLAY){if(MSOUND)audioStart(MPOS);else audioStop();}});
+mel('mcol').addEventListener('click',function(){
+ MCOL=!MCOL;this.textContent='Colour pumps: '+(MCOL?'on':'off');
+ if(!MCOL)MPUMP=0;});
+var mdrag=false;
+mel('mpos').addEventListener('pointerdown',function(){mdrag=true;});
+window.addEventListener('pointerup',function(){
+ if(mdrag){mdrag=false;midiSeek(parseFloat(mel('mpos').value)*MDUR);}});
+mel('mpos').addEventListener('input',function(){
+ MPOS=parseFloat(this.value)*MDUR;MSET(MPOS);midiClock();
+ if(!mdrag)midiSeek(MPOS);});
+mel('mamt').addEventListener('input',function(){
+ MAMT=parseFloat(this.value);mel('mamto').textContent=Math.round(MAMT*100)+'%';midiLive();});
+mel('mpulse').addEventListener('input',function(){
+ MPULSE=parseFloat(this.value);mel('mpulseo').textContent=Math.round(MPULSE*100)+'%';});
+mel('mvol').addEventListener('input',function(){
+ MVOL=parseFloat(this.value);mel('mvolo').textContent=Math.round(MVOL*100)+'%';
+ if(mgain)mgain.gain.setTargetAtTime(MVOL,actx.currentTime,0.02);});
+mel('mrel').addEventListener('input',function(){
+ MREL=parseFloat(this.value);mel('mrelo').textContent=MREL.toFixed(2)+'s';});
+/* The buffer is rebuilt on release rather than on every pixel of the drag: it
+   is one pass over the notes, cheap but not free. */
+mel('mrel').addEventListener('change',function(){if(MIDI){analyse();MSET(MPOS);}});
+/* A .mid dropped anywhere on the page loads — the file picker is the long way
+   round for a file already sitting on the desktop. */
+window.addEventListener('dragover',function(e){
+ if(e.dataTransfer)e.dataTransfer.dropEffect='copy';
+ e.preventDefault();});
+window.addEventListener('drop',function(e){
+ e.preventDefault();audioUnlock();
+ var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+ if(f&&/\.midi?$/i.test(f.name))readFile(f);
+ else if(f)midiStat('that is not a .mid file');});
+
 /* ---------- export ---------- */
 function xmlEsc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fileBase(){var s=(val('ttop')+'-'+val('tbot').split('\n').join('-')).trim()
@@ -735,8 +1105,8 @@ function download(blob,name){var u=URL.createObjectURL(blob),a=document.createEl
  a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();
  setTimeout(function(){URL.revokeObjectURL(u);},2000);}
 
-function toSVG(t){derive();
- var W=cv.width,H=cv.height,c1=val('c1'),c2=val('c2'),i,j;
+function toSVGRaw(t){derive();
+ var W=cv.width,H=cv.height,c1=MPUMP>0?hex3(mixA(hx(val('c1')),[255,255,255],MPUMP)):val('c1'),c2=val('c2'),i,j;
  var dp=slivers(t),np=outline(t,dp,1180),hp=holePts(t),L=layout(),cc=hx(c1);
  function n(v){return Math.round(v*100)/100;}
  function poly(p){var d='M',k;for(k=0;k<p.length;k++)d+=(k?'L':'')+n(p[k][0])+' '+n(p[k][1]);return d+'Z';}
@@ -769,6 +1139,14 @@ function toSVG(t){derive();
    '" font-size="'+n(L[i].px)+'" fill="'+L[i].col+'">'+xmlEsc(L[i].ch)+'</text>');}
  s.push('</svg>');
  return s.join('\n');}
+/* The vector writer is handed the same bent parameters the canvas gets, so an
+   SVG saved mid-song is the frame that was on screen, not the unmodulated sun. */
+function toSVG(t){
+ if(!MIDION)return toSVGRaw(t);
+ var sv=P,k;
+ for(k in sv)MSC[k]=sv[k];
+ midiMod(MSC);P=MSC;
+ try{return toSVGRaw(t);}finally{P=sv;}}
 
 /* Minimal GIF89a writer: median-cut palette + the classic LZW compressor. */
 /* Colours go into a 15-bit histogram first, so median cut runs over a few
@@ -912,47 +1290,50 @@ function useCanvas(w){
    canvas of a chosen size: the single sun, or the whole wall. The three
    exporters below know nothing else about what they are recording, so both
    subjects share one PNG path, one GIF encoder and one video recorder. */
-function sunScene(w){var h=null;
+/* paint() takes the elapsed seconds alongside the sun's own time so the MIDI
+   playhead can be put exactly where it was that far into the capture — an
+   export is then the same frames whether it encodes in real time or not. */
+function sunScene(w){var h=null,mt0=0;
  return{w:w,h:w,
   now:function(){return T;},
   at:function(s,el){return s+el*P.speed;},
-  begin:function(){h=useCanvas(w);return h.c;},
-  paint:function(t){draw(t);},
-  end:function(){if(h)h.restore();h=null;},
+  begin:function(){mt0=MPOS;h=useCanvas(w);return h.c;},
+  paint:function(t,el){MSET(mt0+(el||0));draw(t);},
+  end:function(){if(h)h.restore();h=null;MSET(MPOS);},
   name:function(){return fileBase();}};}
 function wallScene(width){
  /* Sized off whole tiles so an export is the grid exactly, never a part row,
     and keeping the tile proportions the wall has on screen. */
  var cw=Math.max(4,Math.round(width/wallCols)),W=cw*wallCols;
  var ar=(wcv.height/wallRows)/(wcv.width/wallCols);
- var ch=Math.max(4,Math.round(cw*ar)),H=ch*wallRows,oc=null,og=null;
+ var ch=Math.max(4,Math.round(cw*ar)),H=ch*wallRows,oc=null,og=null,mt0=0;
  return{w:W,h:H,
   now:function(){return TW;},
   at:function(s,el){return s+el;},
-  begin:function(){oc=document.createElement('canvas');oc.width=W;oc.height=H;
+  begin:function(){mt0=MPOS;oc=document.createElement('canvas');oc.width=W;oc.height=H;
    og=oc.getContext('2d',{willReadFrequently:true});return oc;},
-  paint:function(t){wallPaint(oc,og,t,1);},
-  end:function(){oc=null;og=null;},
+  paint:function(t,el){MSET(mt0+(el||0));wallPaint(oc,og,t,1);},
+  end:function(){oc=null;og=null;MSET(MPOS);},
   name:function(){return 'solntse-wall-'+wallCols+'x'+wallRows;}};}
 function g2d(c){return c.getContext('2d',{willReadFrequently:true});}
 
 function exportPNG(mk,o,out){
  if(busy)return;
- var sc=mk(o.size);setBusy(true);capturing=true;
+ var sc=mk(o.size);setBusy(true);capturing=true;midiHold();
  try{
   var c=sc.begin();
-  sc.paint(sc.now());
+  sc.paint(sc.now(),0);
   c.toBlob(function(b){download(b,sc.name()+'.png');
    out('PNG '+sc.w+'×'+sc.h+' · '+mb(b.size));},'image/png');}
  catch(e){out('failed: '+e.message);}
- finally{sc.end();capturing=false;setBusy(false);}}
+ finally{sc.end();capturing=false;setBusy(false);midiRelease();}}
 
 function exportGIF(mk,o,out){
  if(busy)return;
  var delayCs=Math.max(2,Math.round(100/o.fps)),fps=100/delayCs;
  var count=Math.max(2,Math.min(600,Math.round(o.secs*fps)));
  var sc=mk(o.size),startT=sc.now(),W=sc.w,H=sc.h,px=W*H;
- setBusy(true);
+ setBusy(true);midiHold();
  return (async function(){
   var open=null;
   try{
@@ -963,7 +1344,7 @@ function exportGIF(mk,o,out){
    open=pre;
    var pn=pre.w*pre.h;
    for(i=0;i<12;i++){
-    pre.paint(pre.at(startT,(i/12)*o.secs));
+    pre.paint(pre.at(startT,(i/12)*o.secs),(i/12)*o.secs);
     var pd=pg.getImageData(0,0,pre.w,pre.h).data;
     for(q=0;q<pn;q+=2)histAdd(hist,pd[q*4],pd[q*4+1],pd[q*4+2]);
     await tick();}
@@ -973,7 +1354,7 @@ function exportGIF(mk,o,out){
    var lc=sc.begin(),lg=g2d(lc);open=sc;
    var gout=new Bytes(),minCode=gifStart(gout,W,H,pal),idx=new Uint8Array(px);
    for(i=0;i<count;i++){
-    sc.paint(sc.at(startT,i/fps));
+    sc.paint(sc.at(startT,i/fps),i/fps);
     var d=lg.getImageData(0,0,W,H).data;
     if(dith)quantDither(d,W,H,pal,near,idx);else quantPlain(d,px,near,idx);
     gifFrame(gout,W,H,idx,minCode,delayCs);
@@ -986,29 +1367,41 @@ function exportGIF(mk,o,out){
    out('GIF '+W+'×'+H+' · '+Math.round(fps)+'fps · '+count+' frames · '+mb(bytes.length)+
        (o.fps>fps+0.5?' (GIF caps at '+Math.round(fps)+'fps)':''));
   }catch(e){out('failed: '+e.message);}
-  finally{if(open)open.end();capturing=false;setBusy(false);}})();}
+  finally{if(open)open.end();capturing=false;setBusy(false);midiRelease();}})();}
 
-function videoMime(){
+function videoMime(withAudio){
  if(!window.MediaRecorder)return null;
- var t=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'];
+ var t=withAudio
+  ?['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4']
+  :['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'];
  for(var i=0;i<t.length;i++)if(MediaRecorder.isTypeSupported(t[i]))return t[i];
  return null;}
 function exportVideo(mk,o,out){
  if(busy)return;
- var mime=videoMime();
+ /* Video is the one export that runs in real time, which is exactly what a
+    synth needs — so when a MIDI file is loaded and audible the clip carries the
+    music as a real audio track, and the sun in it is dancing to the sound in it. */
+ var withAudio=false;
+ if(MIDI&&MSOUND){audioUnlock();withAudio=!!(actx&&mdest);}
+ var mime=videoMime(withAudio);
  if(!mime){out('this browser cannot record video');return;}
  if(document.hidden){out('keep this tab visible — video records in real time');return;}
  var count=Math.max(2,Math.round(o.secs*o.fps));
- var sc=mk(o.size),startT=sc.now(),W=sc.w,H=sc.h;
+ var sc=mk(o.size),startT=sc.now(),W=sc.w,H=sc.h,wasPlaying=MPLAY,startMT=MPOS;
  setBusy(true);
  return (async function(){
   var open=null;
   try{
    capturing=true;
    var lc=sc.begin();open=sc;
-   sc.paint(startT);
+   sc.paint(startT,0);
    var stream=lc.captureStream(0),track=stream.getVideoTracks()[0];
+   if(withAudio){
+    midiPause();midiSeek(startMT);midiPlay();
+    var at=mdest.stream.getAudioTracks()[0];
+    if(at)stream.addTrack(at);else withAudio=false;}
    var rec=new MediaRecorder(stream,{mimeType:mime,
+    audioBitsPerSecond:160000,
     videoBitsPerSecond:Math.min(80e6,Math.max(1.2e7,Math.round(W*H*o.fps*0.35)))});
    var chunks=[];rec.ondataavailable=function(e){if(e.data&&e.data.size)chunks.push(e.data);};
    var stopped=new Promise(function(r){rec.onstop=r;});
@@ -1019,7 +1412,10 @@ function exportVideo(mk,o,out){
    var t0v=performance.now(),late=0,i;
    for(i=0;i<count;i++){
     if(document.hidden)throw new Error('tab was hidden mid-capture');
-    sc.paint(sc.at(startT,i/o.fps));
+    /* While the transport is running the playhead is the truth — taken from the
+       audio clock, it cannot drift against the sound being recorded, and a loop
+       that comes round mid-capture takes the picture round with it. */
+    sc.paint(sc.at(startT,i/o.fps),(MIDI&&MPLAY)?MPOS-startMT:i/o.fps);
     track.requestFrame();
     var due=t0v+(i+1)*1000/o.fps;
     if(performance.now()>due)late++;
@@ -1030,9 +1426,11 @@ function exportVideo(mk,o,out){
    sc.end();open=null;
    var blob=new Blob(chunks,{type:mime}),ext=mime.indexOf('mp4')>=0?'.mp4':'.webm';
    download(blob,sc.name()+ext);
-   out('video '+W+'×'+H+' · '+real.toFixed(0)+'fps'+(late?' · '+late+' late':'')+' · '+mb(blob.size));
+   out('video '+W+'×'+H+' · '+real.toFixed(0)+'fps'+(withAudio?' · with sound':'')+
+       (late?' · '+late+' late':'')+' · '+mb(blob.size));
   }catch(e){out('failed: '+e.message);}
-  finally{if(open)open.end();capturing=false;setBusy(false);}})();}
+  finally{if(open)open.end();capturing=false;setBusy(false);
+   if(MIDI&&!wasPlaying){midiPause();midiSeek(startMT);}}})();}
 
 document.getElementById('bsvg').addEventListener('click',function(){
  if(busy)return;
@@ -1046,7 +1444,12 @@ document.getElementById('wvid').addEventListener('click',function(){exportVideo(
 document.getElementById('bdith').addEventListener('click',function(){
  dith=!dith;this.textContent='Dither: '+(dith?'on':'off');});
 
-document.getElementById('bpause').addEventListener('click',function(){paused=!paused;this.innerHTML='<i class="ti '+(paused?'ti-player-play':'ti-player-pause')+'" style="font-size:16px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>'+(paused?'Play':'Pause');});
+document.getElementById('bpause').addEventListener('click',function(){paused=!paused;this.innerHTML='<i class="ti '+(paused?'ti-player-play':'ti-player-pause')+'" style="font-size:16px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>'+(paused?'Play':'Pause');
+ /* Freezing the sun with the music still running would leave a still image
+    twitching, so the transport stops with it and picks up where it left off. */
+ if(paused){pauseHeld=MPLAY;midiPause();}
+ else if(pauseHeld){pauseHeld=false;midiPlay();}});
+var pauseHeld=false;
 document.getElementById('brand').addEventListener('click',shuffle);
 document.getElementById('bdice').addEventListener('click',shuffle);
 document.getElementById('bcaps').addEventListener('click',function(){caps=!caps;this.textContent='Caps: '+(caps?'on':'off');pushURL();});

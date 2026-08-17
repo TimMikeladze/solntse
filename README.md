@@ -4,9 +4,9 @@
 
 An animated album-cover artwork generator: a procedural sun around a black circle, with editable
 heading and title text above and below it. Everything is drawn on a `<canvas>` at 60fps — the sun's
-flames, slivers and ripples are generated, so no two seeds look alike. Export a still as SVG or PNG,
-or the animation as a GIF or a 60fps video — or drop the controls and fill the screen with a grid of
-suns.
+flames, slivers and ripples are generated, so no two seeds look alike. Drop a MIDI file on the page
+and the sun beats to it. Export a still as SVG or PNG, or the animation as a GIF or a 60fps video —
+or drop the controls and fill the screen with a grid of suns.
 
 ![Solntse](screenshot.png)
 
@@ -120,6 +120,76 @@ There is no SVG export for the wall. A hundred tiles at over a thousand outline 
 to tens of megabytes, and every tile would need its gradient and glow filter ids rewritten to avoid
 collisions. Export a single sun as SVG instead.
 
+## MIDI
+
+Load a `.mid` — with the button or by dropping it anywhere on the page — and the sun is driven by
+the music instead of only by the clock. It starts playing at once, through a small built-in synth,
+so there is something to hear as well as something to watch. Nothing is uploaded: the file is parsed
+in the page.
+
+- **Play / Pause**, **Stop** and the **Position** slider are the transport. Scrubbing moves the
+  picture too, so you can park on a beat and export that frame.
+- **Loop** starts the file again at the end.
+- **Sound** mutes the synth without stopping the visualisation. With sound on, the playhead is taken
+  from the audio clock, so the sun cannot drift against what you are hearing.
+- **Colour pumps** lets a note-on lift the lava toward white for as long as the hit lasts.
+- **Clear** unloads the file and hands the sun back to the sliders.
+
+`Pause` on the main row stops the music with the sun — a frozen picture over running music is the
+one combination that never looks intentional.
+
+### What listens to what
+
+The file is parsed to notes in seconds and rendered once into an analysis buffer at 100 samples a
+second: overall energy, three pitch bands, a note-on pulse and a pitch centroid. Everything after
+that reads the buffer *by song time*, which is what makes a scrub and an export show the same sun as
+the live playback did.
+
+Bands are split at the file's own pitch terciles rather than at fixed octaves, so a solo piano piece
+still has a low band to beat against and a bass line still has a top. Each band is normalised, with
+a floor under the divisor so a band carrying almost nothing cannot be amplified into a false beat.
+
+| Driver | Moves |
+| --- | --- |
+| Low band | `Sun scale` up, `Hole size` down — the sun swells on the kick |
+| Overall energy | `Flame length`, `Ripple`, `Orbit reach`, `Slivers` |
+| Mid band | `Branching` |
+| High band | `Jaggedness`, `Sliver size` |
+| Note-on pulse | `Glow`, `Sweep`, `Sharpness`, and the colour pump |
+
+`Spin` and `Flow speed` are deliberately left out. Both multiply time inside `outerR`, so nudging
+either does not brighten the sun, it teleports the flames.
+
+- **Reaction** scales all of it, and at 0 the MIDI file changes nothing at all.
+- **Note tail** is how long a released note keeps glowing — the buffer is rebuilt when you let go of
+  the slider.
+- **Pulse** is the weight of the note-on hit against the sustained energy.
+- **Volume** is the synth, not the visualisation.
+
+The sliders themselves never move: the music bends a *copy* of them on the way into the renderer, so
+the sun you shaped is still the sun you get back when the file is cleared. The wall reads the same
+copy, so a hundred tiles beat together on one file.
+
+### MIDI and export
+
+An exported frame is placed on the playhead the same distance into the capture, so a GIF is exactly
+the passage you asked for. PNG and GIF encode far slower than real time, so the transport is frozen
+for the duration and picks up where it left off.
+
+Video records in real time, which is what a synth wants: with a file loaded and sound on, the clip
+carries the music as a real audio track, and the sun in it is dancing to the sound in it. If the song
+loops mid-capture, the picture loops with it.
+
+A MIDI file is far too large for the URL hash, so it is the one part of the artwork a link does not
+carry. Load the file again on the other side.
+
+### What it understands
+
+Format 0, 1 and 2; running status; note-on at velocity zero as a note-off; mid-file tempo changes;
+SMPTE division as well as ticks per quarter note; notes left hanging at the end of a track. Channel
+10 is played as percussion — a filtered noise burst, since pitch there is which drum, not which note.
+A file it cannot read says so in the status line and leaves the sun you had alone.
+
 ## Sharing
 
 The entire artwork lives in the URL hash — every slider, both text fields, the typeface, all four
@@ -149,6 +219,9 @@ line and the title block independently.
 **Toggles** — `Caps` forces uppercase, `Gradient` shades the lava radially, `Liquid hole` makes the
 inner circle wobble instead of staying a perfect disc, `Dither` applies Floyd–Steinberg error
 diffusion when writing a GIF.
+
+**MIDI** — a loaded file, its transport, and `Reaction`, `Note tail`, `Pulse` and `Volume`. See
+[MIDI](#midi).
 
 **Colours** — lava, ground (background), top text, title.
 
@@ -226,3 +299,9 @@ renderer: exports and wall tiles both point it at a different surface by swappin
 reads, so a sun on the wall and a sun in the editor cannot drift apart.
 
 Randomness comes from a seeded PRNG (`seed()`), so a given seed always rebuilds the same geometry.
+
+A MIDI file joins at the same seam. `draw()` copies `P`, bends the copy through `midiMod()` and hands
+that to the renderer, so the wall, the SVG writer and all four exporters see modulated numbers and
+know nothing about MIDI. `MSET(songTime)` samples the analysis buffer once a frame rather than once a
+tile, and a scene's `paint(t, elapsed)` puts the playhead where it belongs for the frame being
+captured — which is the whole reason an export matches what was on screen.
