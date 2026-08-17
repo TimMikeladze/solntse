@@ -1,6 +1,6 @@
-# Zvezda
+# Solntse
 
-**[zvezda-one.vercel.app](https://zvezda-one.vercel.app)**
+**[solntse.vercel.app](https://solntse.vercel.app)**
 
 An animated album-cover artwork generator: a liquid ink sun around a black circle, with editable
 heading and title text above and below it. Everything is drawn on a `<canvas>` at 60fps — the sun's
@@ -8,7 +8,7 @@ flames, slivers and ripples are procedural, so no two seeds look alike.
 
 Named after КИНО's *Звезда по имени Солнце* — the cover it defaults back to.
 
-![Zvezda](screenshot.png)
+![Solntse](screenshot.png)
 
 ## Usage
 
