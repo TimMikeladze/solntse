@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zvezda — liquid sun cover generator</title>
+<meta name="description" content="Generate an animated album-cover artwork: a liquid ink sun around a black circle, with editable heading and title text.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Oswald:wght@700&family=PT+Sans+Narrow:wght@700&family=Roboto+Condensed:wght@700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --bg:#0b0b0c;--panel:#141416;--text:#eceae4;--text-secondary:#a3a09a;
+  --text-muted:#6e6b66;--border:#2a2a2d;--accent:#f2d14b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.wrap{max-width:920px;margin:0 auto;padding:32px 20px 64px}
+.masthead{margin-bottom:4px}
+.masthead h1{margin:0;font-family:"Montserrat",var(--font-sans);font-weight:900;font-size:26px;letter-spacing:0.16em;text-transform:uppercase}
+.masthead p{margin:6px 0 0;color:var(--text-secondary);max-width:52ch}
+button,input,select,textarea{font-family:inherit;font-size:14px;color:var(--text)}
+button{background:var(--panel);border:0.5px solid var(--border);border-radius:7px;padding:6px 11px;cursor:pointer}
+button:hover{border-color:var(--text-muted)}
+input[type=text],textarea,select{background:var(--panel);border:0.5px solid var(--border);border-radius:7px;padding:6px 9px}
+textarea{resize:vertical}
+input[type=range],input[type=color]{accent-color:var(--accent)}
+input[type=range]{height:20px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="masthead">
+  <h1>Zvezda</h1>
+  <p>An animated album-cover artwork: a liquid ink sun around a black circle, with editable heading and title text above and below it.</p>
+</header>
+<style>
+.lsc{display:grid;grid-template-columns:repeat(auto-fit,minmax(226px,1fr));gap:9px 20px;margin-top:12px}
+.lsr{display:flex;align-items:center;gap:10px}
+.lsr span.l{font-size:13px;color:var(--text-secondary);min-width:88px}
+.lsr input[type=range]{flex:1;min-width:54px}
+.lsr span.v{font-size:13px;font-weight:500;min-width:38px;text-align:right}
+.lsb{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.lsb button{font-size:13px}
+.lsb input[type=color]{width:32px;height:26px;padding:0;border:0.5px solid var(--border);border-radius:6px;background:none;cursor:pointer}
+.lsh{font-size:13px;color:var(--text-muted);margin:18px 0 2px;border-top:0.5px solid var(--border);padding-top:14px}
+</style>
+<div style="padding:1rem 0">
+  <div id="sunbox" style="display:flex;justify-content:center"><canvas id="lavasun" style="border-radius:12px;display:block"></canvas></div>
+  <div class="lsh">Shape</div>
+  <div class="lsc">
+    <div class="lsr"><span class="l">Flow speed</span><input type="range" id="speed" min="0" max="3" step="0.1" value="1"><span class="v" id="speedo">1.0×</span></div>
+    <div class="lsr"><span class="l">Spin</span><input type="range" id="spin" min="-0.6" max="0.6" step="0.01" value="0.06"><span class="v" id="spino">0.06</span></div>
+    <div class="lsr"><span class="l">Flames</span><input type="range" id="flames" min="3" max="24" step="1" value="15"><span class="v" id="flameso">15</span></div>
+    <div class="lsr"><span class="l">Flame length</span><input type="range" id="length" min="0" max="1" step="0.01" value="0.72"><span class="v" id="lengtho">72%</span></div>
+    <div class="lsr"><span class="l">Sharpness</span><input type="range" id="sharp" min="0" max="1" step="0.01" value="0.68"><span class="v" id="sharpo">68%</span></div>
+    <div class="lsr"><span class="l">Branching</span><input type="range" id="branch" min="0" max="1" step="0.01" value="0.62"><span class="v" id="brancho">62%</span></div>
+    <div class="lsr"><span class="l">Jaggedness</span><input type="range" id="jag" min="0" max="1" step="0.01" value="0.5"><span class="v" id="jago">50%</span></div>
+    <div class="lsr"><span class="l">Sweep</span><input type="range" id="sweep" min="0" max="1" step="0.01" value="0.28"><span class="v" id="sweepo">28%</span></div>
+    <div class="lsr"><span class="l">Slivers</span><input type="range" id="drops" min="0" max="24" step="1" value="6"><span class="v" id="dropso">6</span></div>
+    <div class="lsr"><span class="l">Sliver size</span><input type="range" id="dsize" min="0" max="1" step="0.01" value="0.34"><span class="v" id="dsizeo">34%</span></div>
+    <div class="lsr"><span class="l">Sliver stretch</span><input type="range" id="sliver" min="0" max="1" step="0.01" value="0.78"><span class="v" id="slivero">78%</span></div>
+    <div class="lsr"><span class="l">Orbit reach</span><input type="range" id="orbit" min="0" max="1" step="0.01" value="0.3"><span class="v" id="orbito">30%</span></div>
+    <div class="lsr"><span class="l">Ripple</span><input type="range" id="ripple" min="0" max="1" step="0.01" value="0.35"><span class="v" id="rippleo">35%</span></div>
+    <div class="lsr"><span class="l">Hole size</span><input type="range" id="hole" min="0.2" max="0.6" step="0.01" value="0.44"><span class="v" id="holeo">44%</span></div>
+    <div class="lsr"><span class="l">Glow</span><input type="range" id="glow" min="0" max="1" step="0.01" value="0"><span class="v" id="glowo">0%</span></div>
+    <div class="lsr"><span class="l">Sun scale</span><input type="range" id="scale" min="0.4" max="1" step="0.01" value="0.79"><span class="v" id="scaleo">79%</span></div>
+    <div class="lsr"><span class="l">Sun offset</span><input type="range" id="offy" min="-0.25" max="0.25" step="0.01" value="-0.02"><span class="v" id="offyo">-2%</span></div>
+  </div>
+  <div class="lsh">Type</div>
+  <div class="lsr" style="margin-top:10px"><span class="l">Top line</span><input type="text" id="ttop" value="" placeholder="e.g. КИНО" style="flex:1;min-width:0"></div>
+  <div class="lsr" style="margin-top:8px;align-items:flex-start"><span class="l" style="padding-top:7px">Bottom lines</span><textarea id="tbot" rows="3" placeholder="One line per row" style="flex:1;min-width:0;font-family:var(--font-sans);font-size:14px"></textarea></div>
+  <div class="lsr" style="margin-top:8px"><span class="l">Typeface</span><select id="tfont" style="flex:1"><option value="Montserrat">Montserrat black</option><option value="Oswald">Oswald condensed</option><option value="Roboto Condensed">Roboto condensed</option><option value="PT Sans Narrow">PT Sans narrow</option><option value="system">System sans</option></select></div>
+  <div class="lsc">
+    <div class="lsr"><span class="l">Top size</span><input type="range" id="tsize" min="0.02" max="0.16" step="0.002" value="0.072"><span class="v" id="tsizeo">7%</span></div>
+    <div class="lsr"><span class="l">Top tracking</span><input type="range" id="ttrack" min="0" max="0.5" step="0.01" value="0.14"><span class="v" id="ttracko">14%</span></div>
+    <div class="lsr"><span class="l">Top position</span><input type="range" id="ty" min="0.02" max="0.45" step="0.005" value="0.095"><span class="v" id="tyo">10%</span></div>
+    <div class="lsr"><span class="l">Title size</span><input type="range" id="bsize" min="0.015" max="0.12" step="0.002" value="0.046"><span class="v" id="bsizeo">5%</span></div>
+    <div class="lsr"><span class="l">Title tracking</span><input type="range" id="btrack" min="0" max="0.5" step="0.01" value="0.1"><span class="v" id="btracko">10%</span></div>
+    <div class="lsr"><span class="l">Line spacing</span><input type="range" id="lead" min="0.9" max="2.2" step="0.02" value="1.26"><span class="v" id="leado">126%</span></div>
+    <div class="lsr"><span class="l">Title position</span><input type="range" id="by" min="0.5" max="0.97" step="0.005" value="0.775"><span class="v" id="byo">78%</span></div>
+  </div>
+  <div class="lsb">
+    <button id="bpause" type="button"><i class="ti ti-player-pause" style="font-size:16px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>Pause</button>
+    <button id="brand" type="button"><i class="ti ti-refresh" style="font-size:16px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>Randomise</button>
+    <button id="breset" type="button">Reset to cover</button>
+    <button id="bcaps" type="button">Caps: on</button>
+    <button id="bgrad" type="button">Gradient: off</button>
+    <button id="bwob" type="button">Liquid hole: off</button>
+    <span style="font-size:13px;color:var(--text-secondary);margin-left:4px">Lava</span><input type="color" id="c1" value="#f2d14b" aria-label="Lava colour">
+    <span style="font-size:13px;color:var(--text-secondary)">Ground</span><input type="color" id="c2" value="#0a0a0a" aria-label="Background colour">
+    <span style="font-size:13px;color:var(--text-secondary)">Top</span><input type="color" id="c3" value="#f4f2ea" aria-label="Top text colour">
+    <span style="font-size:13px;color:var(--text-secondary)">Title</span><input type="color" id="c4" value="#e01b1b" aria-label="Title colour">
+  </div>
+</div>
+<script>
+(function(){
+var cv=document.getElementById('lavasun'),ctx=cv.getContext('2d'),TAU=Math.PI*2;
+var DPR=Math.min(window.devicePixelRatio||1,2),S=0,cx=0,cy=0,paused=false,grad=false,wob=false,caps=true;
+var keys=['speed','spin','flames','length','sharp','branch','jag','sweep','drops','dsize','sliver','orbit','ripple','hole','glow','scale','offy','tsize','ttrack','ty','bsize','btrack','lead','by'];
+var DEF={speed:1,spin:0.06,flames:15,length:0.72,sharp:0.68,branch:0.62,jag:0.5,sweep:0.28,drops:6,dsize:0.34,sliver:0.78,orbit:0.3,ripple:0.35,hole:0.44,glow:0,scale:0.79,offy:-0.02,tsize:0.072,ttrack:0.14,ty:0.095,bsize:0.046,btrack:0.1,lead:1.26,by:0.775},P={};
+function fmt(k,v){if(k==='flames'||k==='drops')return String(Math.round(v));if(k==='speed')return v.toFixed(1)+'\u00d7';if(k==='spin')return v.toFixed(2);return Math.round(v*100)+'%';}
+function sync(){for(var i=0;i<keys.length;i++){var k=keys[i];P[k]=parseFloat(document.getElementById(k).value);document.getElementById(k+'o').textContent=fmt(k,P[k]);}}
+for(var z=0;z<keys.length;z++)document.getElementById(keys[z]).addEventListener('input',sync);
+function seed(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+var SL=[],DR=[],JG=[];
+function build(sd){var r=seed(sd),i,k;SL=[];DR=[];JG=[];
+ for(i=0;i<24;i++){var kids=[],nk=Math.floor(r()*3.2);
+  for(k=0;k<nk;k++)kids.push({off:(r()<0.5?-1:1)*(0.2+r()*0.5),amp:0.18+r()*0.5,w:0.26+r()*0.4,pul:0.2+r()*0.6,po:r()*TAU});
+  SL.push({j:(r()-0.5)*0.75,rj:r(),m:{off:0,amp:0.3+r()*0.7,w:0.5+r()*0.8,pul:0.14+r()*0.5,po:r()*TAU},k:kids});}
+ for(i=0;i<24;i++)DR.push({a0:r()*TAU,rj:r(),ob:r(),oa:0.04+r()*0.09,os:0.12+r()*0.26,op:r()*TAU,sz:0.45+r()*1.05,ps:(r()-0.5)*1.1,as:0.75+r()*0.5,w:r()*TAU});
+ var ks=[9,15,23,37];for(i=0;i<4;i++)JG.push({k:ks[i]+Math.floor(r()*7),ph:r()*TAU,dr:(r()-0.5)*0.6,a:[0.5,0.3,0.2,0.13][i]});}
+build(514422);
+function hx(h){h=h.replace('#','');return[parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];}
+function mx(c,w,a){return'rgb('+Math.round(c[0]+(w[0]-c[0])*a)+','+Math.round(c[1]+(w[1]-c[1])*a)+','+Math.round(c[2]+(w[2]-c[2])*a)+')';}
+function val(id){return document.getElementById(id).value;}
+function fit(){var w=document.getElementById('sunbox').clientWidth||360,side=Math.max(220,Math.min(w,560));
+ cv.style.width=side+'px';cv.style.height=side+'px';cv.width=Math.round(side*DPR);cv.height=Math.round(side*DPR);S=cv.width/2;cx=S;cy=S;}
+var Rb=0,Rh=0,reach=0,Sr=0,cyy=0,nF=15,nD=6,ampMax=0.7,wL=0.2,wT=0.3,ea=1,eb=2,sgn=1,slot=0.4;
+function prof(u){return Math.pow(1-Math.pow(u,ea),eb);}
+function wrap(d){d=(d+Math.PI)%TAU;if(d<0)d+=TAU;return d-Math.PI;}
+function spike(th,t,c,sp,mul){var d=wrap(th-c),w=(d*sgn<0?wT:wL)*sp.w,u=Math.abs(d)/w;if(u>=1)return 0;
+ return reach*ampMax*sp.amp*mul*(0.45+0.55*(0.5+0.5*Math.sin(t*sp.pul+sp.po)))*prof(u);}
+function outerR(th,t){var i,k,r=Rb*(1+P.ripple*(0.045*Math.sin(3*th+t*0.33)+0.03*Math.sin(5*th-t*0.26)+0.02*Math.sin(7*th+t*0.44)));
+ for(i=0;i<nF;i++){var s=SL[i],c0=(i/nF)*TAU+s.j*slot+P.spin*t*(0.88+0.24*s.rj);
+  r+=spike(th,t,c0,s.m,1);
+  if(P.branch>0)for(k=0;k<s.k.length;k++)r+=spike(th,t,c0+s.k[k].off*slot,s.k[k],P.branch);}
+ if(P.jag>0){var jg=0;for(i=0;i<4;i++)jg+=JG[i].a*Math.sin(JG[i].k*th+JG[i].ph+t*JG[i].dr);
+  r+=P.jag*reach*0.075*jg*(0.22+0.78*Math.min(1,(r-Rb)/Math.max(1,reach)));}
+ return r;}
+function fontCss(px){var f=val('tfont');if(f==='system')return '500 '+px+'px var(--font-sans), sans-serif';
+ var w=f==='Montserrat'?900:700;return w+' '+px+'px "'+f+'", sans-serif';}
+function tracked(txt,y,px,sp,col){if(!txt)return;ctx.font=fontCss(px);ctx.fillStyle=col;ctx.textAlign='left';ctx.textBaseline='alphabetic';
+ var i,w=0,ws=[];for(i=0;i<txt.length;i++){ws[i]=ctx.measureText(txt[i]).width;w+=ws[i]+(i<txt.length-1?sp:0);}
+ var x=cx-w/2;for(i=0;i<txt.length;i++){ctx.fillText(txt[i],x,y);x+=ws[i]+sp;}}
+var t0=performance.now(),T=0;
+function frame(now){var dt=Math.min(0.05,(now-t0)/1000);t0=now;if(!paused)T+=dt*P.speed;var i,j,k;
+ Sr=S*P.scale;cyy=cy+S*P.offy;
+ Rh=Sr*P.hole;Rb=Rh*1.055;reach=Math.max(4,Sr*0.975-Rb);
+ nF=Math.round(P.flames);nD=Math.round(P.drops);ampMax=0.15+0.85*P.length;slot=TAU/nF;
+ var bw=slot*0.62*(1.1-0.5*P.sharp);wL=bw*(1-0.42*P.sweep);wT=bw*(1+1.5*P.sweep);
+ ea=2-1.42*P.sharp;eb=0.85+3.6*P.sharp;sgn=P.spin<0?-1:1;
+ var c1=hx(val('c1')),c2=hx(val('c2')),bg='rgb('+c2[0]+','+c2[1]+','+c2[2]+')';
+ ctx.clearRect(0,0,cv.width,cv.height);ctx.fillStyle=bg;ctx.fillRect(0,0,cv.width,cv.height);
+ var dp=[];
+ for(j=0;j<nD;j++){var d=DR[j],an=d.a0+P.spin*T*(0.7+0.7*d.rj);
+  var orb=Rb+reach*(0.42+0.5*P.orbit+d.ob*0.18+d.oa*Math.sin(T*d.os+d.op));
+  var rad=(0.03+0.075*P.dsize)*d.sz*Math.min(reach,Rb)*(1+0.1*Math.sin(T*1.2+d.w));
+  var base=outerR(an,T),gap=orb-rad-base,mr=reach*0.32,amp=gap<mr?(1-Math.max(gap,0)/mr)*(orb-base)*0.92:0;
+  dp.push({an:an,orb:orb,rad:rad,ps:d.ps,as:d.as,w:d.w,amp:amp,sig:Math.max(0.09,Math.atan2(rad,orb)*1.9)});}
+ if(grad){var g2=ctx.createRadialGradient(cx,cyy,Rh,cx,cyy,Sr);g2.addColorStop(0,mx(c1,[255,255,255],0.3));g2.addColorStop(0.45,'rgb('+c1[0]+','+c1[1]+','+c1[2]+')');g2.addColorStop(1,mx(c1,[0,0,0],0.2));ctx.fillStyle=g2;}
+ else ctx.fillStyle='rgb('+c1[0]+','+c1[1]+','+c1[2]+')';
+ ctx.shadowColor='rgba('+c1[0]+','+c1[1]+','+c1[2]+',0.55)';ctx.shadowBlur=P.glow*44*DPR;
+ var N=1180;ctx.beginPath();
+ for(var q=0;q<=N;q++){var th=q/N*TAU,r=outerR(th,T);
+  for(j=0;j<dp.length;j++){if(dp[j].amp>0){var dd=Math.abs(wrap(th-dp[j].an))/(dp[j].sig*2.2);if(dd<1)r+=dp[j].amp*prof(dd);}}
+  if(r<Rh*1.005)r=Rh*1.005;
+  var x=cx+Math.cos(th)*r,y=cyy+Math.sin(th)*r;q?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+ ctx.closePath();ctx.fill();
+ var E=1+P.sliver*4.2,sq=Math.sqrt(E);
+ for(j=0;j<dp.length;j++){var o=dp[j],ox=cx+Math.cos(o.an)*o.orb,oy=cyy+Math.sin(o.an)*o.orb;
+  var ps=o.an+Math.PI/2+o.ps+0.12*Math.sin(T*0.6+o.w),L=o.rad*sq,Th=o.rad/sq;
+  var ux=Math.cos(ps),uy=Math.sin(ps),nx=-uy,ny=ux;
+  var axx=ox-ux*L,ayy=oy-uy*L,bxx=ox+ux*L,byy=oy+uy*L;
+  ctx.beginPath();ctx.moveTo(axx,ayy);
+  ctx.quadraticCurveTo(ox+nx*2*Th*o.as,oy+ny*2*Th*o.as,bxx,byy);
+  ctx.quadraticCurveTo(ox-nx*2*Th/o.as,oy-ny*2*Th/o.as,axx,ayy);ctx.closePath();ctx.fill();}
+ ctx.shadowBlur=0;ctx.fillStyle=bg;ctx.beginPath();
+ if(wob){for(k=0;k<=200;k++){var a3=k/200*TAU,hr=Rh*(1+0.05*Math.sin(3*a3-T*0.5)+0.03*Math.sin(5*a3+T*0.34));
+  var x3=cx+Math.cos(a3)*hr,y3=cyy+Math.sin(a3)*hr;k?ctx.lineTo(x3,y3):ctx.moveTo(x3,y3);}ctx.closePath();}
+ else ctx.arc(cx,cyy,Rh,0,TAU);
+ ctx.fill();
+ var H=cv.height,tp=val('ttop'),bp=val('tbot').split('\n');
+ if(caps){tp=tp.toUpperCase();for(i=0;i<bp.length;i++)bp[i]=bp[i].toUpperCase();}
+ var tpx=P.tsize*H;tracked(tp,P.ty*H+tpx*0.5,tpx,P.ttrack*tpx,val('c3'));
+ var bpx=P.bsize*H,ly=P.by*H;
+ for(i=0;i<bp.length;i++)tracked(bp[i],ly+i*bpx*P.lead+bpx*0.5,bpx,P.btrack*bpx,val('c4'));
+ requestAnimationFrame(frame);}
+document.getElementById('bpause').addEventListener('click',function(){paused=!paused;this.innerHTML='<i class="ti '+(paused?'ti-player-play':'ti-player-pause')+'" style="font-size:16px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>'+(paused?'Play':'Pause');});
+document.getElementById('brand').addEventListener('click',function(){build(Math.floor(Math.random()*1e6));});
+document.getElementById('bcaps').addEventListener('click',function(){caps=!caps;this.textContent='Caps: '+(caps?'on':'off');});
+document.getElementById('bgrad').addEventListener('click',function(){grad=!grad;this.textContent='Gradient: '+(grad?'on':'off');});
+document.getElementById('bwob').addEventListener('click',function(){wob=!wob;this.textContent='Liquid hole: '+(wob?'on':'off');});
+document.getElementById('breset').addEventListener('click',function(){for(var i=0;i<keys.length;i++)document.getElementById(keys[i]).value=DEF[keys[i]];
+ document.getElementById('c1').value='#f2d14b';document.getElementById('c2').value='#0a0a0a';document.getElementById('c3').value='#f4f2ea';document.getElementById('c4').value='#e01b1b';
+ document.getElementById('ttop').value='КИНО';document.getElementById('tbot').value='ЗВЕЗДА\nПО ИМЕНИ\nСОЛНЦЕ';document.getElementById('tfont').value='Montserrat';
+ grad=false;wob=false;caps=true;document.getElementById('bgrad').textContent='Gradient: off';document.getElementById('bwob').textContent='Liquid hole: off';document.getElementById('bcaps').textContent='Caps: on';
+ build(514422);sync();});
+window.addEventListener('resize',fit);sync();fit();requestAnimationFrame(frame);
+})();
+</script>
+</div>
+</body>
+</html>
