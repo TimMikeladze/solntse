@@ -2,7 +2,7 @@
 
 **[solntse.vercel.app](https://solntse.vercel.app)**
 
-An animated album-cover artwork generator: a procedural sun around a black circle, with editable
+An animated album-cover artwork generator: a procedural sun around a black circle, with optional
 heading and title text above and below it. Everything is drawn on a `<canvas>` at 60fps — the sun's
 flames, slivers and ripples are generated, so no two seeds look alike. Drop a MIDI file on the page
 and the sun beats to it, or point it at a microphone or another browser tab and it beats to that.
@@ -14,11 +14,24 @@ fill the screen with a grid of suns.
 ## What it's after
 
 The defaults are tuned to land near the sleeve of **Звезда по имени Солнце** ("A Star Called the
-Sun"), released 29 August 1989 — the last Кино album to appear in Viktor Tsoi's lifetime. He died on
-15 August 1990, not quite a year later.
+Sun") — the last Кино album released in Viktor Tsoi's lifetime.
+
+The album was recorded 21–30 December 1988 in Valery Leontiev's Moscow studio and came out on
+29 August 1989 around Мелодия and the state record industry entirely, on cassettes and reels sold at
+concerts, with no cover at all. Tsoi died on 15 August 1990, not quite a year later.
+
+The eclipse arrived in 1993 with the first proper edition, vinyl on Moroz Records: Andrei Gusev built
+it from a schematic solar eclipse. It works as a logo of sorts now, turning up on shirts, stickers
+and memorabilia around the world — an emblem Tsoi never saw.
 
 Nothing here is traced from that cover: the sun is generated from scratch on every frame, and
 **Reset to cover** puts the defaults back after you have wandered off.
+
+Sources: [Википедия — Звезда по имени Солнце (альбом)](https://ru.wikipedia.org/wiki/%D0%97%D0%B2%D0%B5%D0%B7%D0%B4%D0%B0_%D0%BF%D0%BE_%D0%B8%D0%BC%D0%B5%D0%BD%D0%B8_%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5_(%D0%B0%D0%BB%D1%8C%D0%B1%D0%BE%D0%BC))
+(recording, release, Gusev) ·
+[Wikipedia](https://en.wikipedia.org/wiki/Zvezda_po_imeni_Solntse) (Moroz Records 1993) ·
+[Skillbox Media](https://skillbox.ru/media/music/zvezda_po_imeni_solnce/) (the eclipse becoming the
+logo).
 
 - [Wikipedia — Zvezda po imeni Solntse](https://en.wikipedia.org/wiki/Zvezda_po_imeni_Solntse)
 - [Spotify](https://open.spotify.com/album/0Yu3psNuEMTRM7tzHQgqfJ)
@@ -33,16 +46,16 @@ Open the page and start moving sliders. The canvas updates live.
 On a phone the page does not zoom. Dragging a slider and tapping a tile twice in quick succession are
 both ordinary use here, and either one would otherwise be taken for a zoom gesture.
 
-Every load opens on a different sun: the shape sliders, the seed, the spin direction and the gradient
-toggle are randomised within a range that stays legible. Liquid hole always starts off. The album
-cover is one point in that space, not the starting point.
+Every load opens on the cover's sun: the documented defaults, seed 514422, and no type at all. A URL
+with a state in its hash overrides that and opens on the artwork it carries.
 
-- **Top line** and **Bottom lines** start empty. Type your own, one line per row in the textarea.
-- **Randomise** rolls a new sun — sliders, seed and toggles together. The same roll is on the
-  artwork itself, bottom right: on a phone the button row is off the bottom of the screen while you
-  are looking at the sun.
-- **Reset to cover** goes the other way: the original КИНО / ЗВЕЗДА ПО ИМЕНИ СОЛНЦЕ artwork and every
-  documented default.
+- **Top line** and **Bottom lines** start empty. Type your own, one line per row in the textarea, or
+  press **Reset to cover** for the album's own words.
+- **Randomise** rolls a new sun — sliders, seed and toggles together, anywhere in a range that stays
+  legible; liquid hole always stays off. The same roll is on the artwork itself, bottom right: on a
+  phone the button row is off the bottom of the screen while you are looking at the sun.
+- **Reset to cover** goes back: the original КИНО / ЗВЕЗДА ПО ИМЕНИ СОЛНЦЕ artwork and every
+  documented default — the state the page opened on, with the album's type added.
 - **Pause** freezes the animation so you can grab a specific frame.
 - **Wall** fills the screen with a grid of independent suns — see below.
 - **Copy link** puts the current artwork on your clipboard as a URL.
@@ -69,9 +82,9 @@ them, not ovals.
 The control bar lingers for eight seconds and returns on the next mouse move. It never leaves while
 the pointer is on it, while a tile is being edited, or while an export is running.
 
-Every tile is black-grounded and has its liquid hole off, on every roll. Both are things you turn on
-for one tile by hand in the panel, never things chance does to you — and one shared ground means no
-tile edge ever shows as a seam. The lava is the sleeve's yellow most of the time, with occasional
+Every tile carries the page's own ground and has its liquid hole off, on every roll. Both are things
+you turn on for one tile by hand in the panel, never things chance does to you — and one shared
+ground means no tile edge ever shows as a seam. The lava is the sleeve's yellow most of the time, with occasional
 strays.
 
 ### What it costs
@@ -237,8 +250,10 @@ would otherwise read as one long unbroken onset.
 
 **Sensitivity** does not make the sun bigger; the peak tracker would undo that within a second. It
 moves the signal against the fixed silence floor, which is the one number a running peak cannot work
-out for itself: it decides how quiet a thing still counts as music. The bar beside the buttons is the
-input level, so a dead input is visible rather than mysterious.
+out for itself: it decides how quiet a thing still counts as music. It runs from -12 dB to +24 dB and
+opens at +9 dB, which is enough for a laptop speaker across a room; the floors themselves are set low
+for the same reason. The bar beside the buttons is the input level, so a dead input is visible rather
+than mysterious.
 
 ### Live audio and export
 
@@ -258,13 +273,13 @@ colours, the toggles, and the geometry seed. The address bar rewrites itself as 
 that URL rebuilds the identical sun.
 
 ```
-#s=1.7,-0.44,9,0.6,…&c=7fd4ff,0a0a0a,f4f2ea,00ff88&d=76032&t=Oswald&f=gw&a=…&b=…
+#s=1.7,-0.44,9,0.6,…&c=7fd4ff,0b0b0c,f4f2ea,00ff88&d=76032&t=Oswald&f=gw&a=…&b=…
 ```
 
 `s` is the slider vector in a fixed order, `c` the four colours, `d` the seed, `t` the typeface,
 `f` the toggle flags (`c` caps, `g` gradient, `w` liquid hole), and `a` / `b` the two text fields.
-Values are clamped to each slider's range on the way in and a malformed hash falls back to a random
-sun, so a truncated or hand-edited link degrades instead of breaking.
+Values are clamped to each slider's range on the way in and a malformed hash falls back to the sun
+the page opens on, so a truncated or hand-edited link degrades instead of breaking.
 
 ### Controls
 
@@ -288,7 +303,8 @@ diffusion when writing a GIF.
 **Response** — `Reaction`, `Note tail` and `Pulse` shape whichever source is driving the sun;
 `MIDI volume` is the built-in synth only.
 
-**Colours** — lava, ground (background), top text, title.
+**Colours** — lava, ground (background), top text, title. Ground opens on `#0b0b0c`, the page's own
+background, so the canvas has no visible edge until you change it.
 
 ## Export
 

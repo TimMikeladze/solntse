@@ -56,6 +56,15 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans
 .about{margin-top:6px;font-size:12.5px;line-height:1.5;color:var(--text-muted);max-width:88ch}
 .about p{margin:0}
 .about em{color:var(--text-secondary)}
+.about strong{color:var(--text-secondary);font-weight:600}
+/* The history is a paragraph too many for a masthead, so it sits folded until asked for. */
+.about details{margin-top:5px}
+.about summary{cursor:pointer;color:var(--text-secondary);list-style:none;display:inline-flex;align-items:center;gap:5px}
+.about summary::-webkit-details-marker{display:none}
+.about summary::before{content:"\002B";font-size:11px;color:var(--text-muted)}
+.about details[open] summary::before{content:"\2212"}
+.about summary:hover{color:var(--accent)}
+.about details p{margin-top:6px}
 .masthead a{color:var(--text-secondary);text-decoration-color:var(--border);text-underline-offset:2px}
 .masthead a:hover{color:var(--accent)}
 .foot{margin-top:16px;padding-top:12px;border-top:0.5px solid var(--border);font-size:12.5px}
@@ -78,7 +87,12 @@ input[type=range]{height:20px}
 <header class="masthead">
   <div class="mh"><h1>Solntse</h1></div>
   <div class="about">
-    <p>A tribute to the sleeve of <em lang="ru">Звезда по имени Солнце</em> (“A Star Called the Sun”), released 29 August 1989 — the last <a href="https://en.wikipedia.org/wiki/Kino_(band)" target="_blank" rel="noreferrer">Кино</a> album to appear in <a href="https://en.wikipedia.org/wiki/Viktor_Tsoi" target="_blank" rel="noreferrer">Viktor Tsoi</a>’s lifetime. He died on 15 August 1990, not quite a year later.</p>
+    <p>A tribute to the sleeve of <em lang="ru">Звезда по имени Солнце</em> (“A Star Called the Sun”) — the last <a href="https://en.wikipedia.org/wiki/Kino_(band)" target="_blank" rel="noreferrer">Кино</a> album released in <a href="https://en.wikipedia.org/wiki/Viktor_Tsoi" target="_blank" rel="noreferrer">Viktor Tsoi</a>’s lifetime.</p>
+    <details>
+      <summary>Read more</summary>
+      <p><strong>Recorded</strong> <a href="https://ru.wikipedia.org/wiki/%D0%97%D0%B2%D0%B5%D0%B7%D0%B4%D0%B0_%D0%BF%D0%BE_%D0%B8%D0%BC%D0%B5%D0%BD%D0%B8_%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5_(%D0%B0%D0%BB%D1%8C%D0%B1%D0%BE%D0%BC)" target="_blank" rel="noreferrer">21–30 December 1988</a> in Valery Leontiev’s Moscow studio, released 29 August 1989 around <em lang="ru">Мелодия</em> and the state record industry entirely — <a href="https://ru.wikipedia.org/wiki/%D0%97%D0%B2%D0%B5%D0%B7%D0%B4%D0%B0_%D0%BF%D0%BE_%D0%B8%D0%BC%D0%B5%D0%BD%D0%B8_%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5_(%D0%B0%D0%BB%D1%8C%D0%B1%D0%BE%D0%BC)" target="_blank" rel="noreferrer">cassettes and reels</a> sold at concerts, with no cover at all. Tsoi died on 15 August 1990, not quite a year later.</p>
+      <p><strong>The eclipse</strong> arrived in 1993 with the first proper edition, vinyl on <a href="https://en.wikipedia.org/wiki/Zvezda_po_imeni_Solntse" target="_blank" rel="noreferrer">Moroz Records</a>: <a href="https://ru.wikipedia.org/wiki/%D0%97%D0%B2%D0%B5%D0%B7%D0%B4%D0%B0_%D0%BF%D0%BE_%D0%B8%D0%BC%D0%B5%D0%BD%D0%B8_%D0%A1%D0%BE%D0%BB%D0%BD%D1%86%D0%B5_(%D0%B0%D0%BB%D1%8C%D0%B1%D0%BE%D0%BC)" target="_blank" rel="noreferrer">Andrei Gusev</a> built it from a schematic solar eclipse. It works as <a href="https://skillbox.ru/media/music/zvezda_po_imeni_solnce/" target="_blank" rel="noreferrer">a logo of sorts</a> now, turning up on shirts, stickers and memorabilia around the world — an emblem Tsoi never saw.</p>
+    </details>
     <nav class="links">
       <a href="https://en.wikipedia.org/wiki/Zvezda_po_imeni_Solntse" target="_blank" rel="noreferrer">Wikipedia</a>
       <a href="https://open.spotify.com/album/0Yu3psNuEMTRM7tzHQgqfJ" target="_blank" rel="noreferrer">Spotify</a>
@@ -134,7 +148,7 @@ input[type=range]{height:20px}
  background:rgba(18,18,20,0.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
  border:0.5px solid var(--border);border-radius:12px;padding:11px}
 #wedit.on{display:flex}
-#wedit canvas{width:100%;aspect-ratio:1;border-radius:8px;display:block;background:#0a0a0a}
+#wedit canvas{width:100%;aspect-ratio:1;border-radius:8px;display:block;background:#0b0b0c}
 #wedit .lsr span.l{min-width:78px;font-size:12.5px}
 #wedit .lsr span.v{min-width:34px;font-size:12.5px}
 #wedit .lsr{gap:6px}
@@ -196,7 +210,7 @@ input[type=range]{height:20px}
     <button id="bgrad" type="button">Gradient: off</button>
     <button id="bwob" type="button">Liquid hole: off</button>
     <span style="font-size:13px;color:var(--text-secondary);margin-left:4px">Lava</span><input type="color" id="c1" value="#f2d14b" aria-label="Lava colour">
-    <span style="font-size:13px;color:var(--text-secondary)">Ground</span><input type="color" id="c2" value="#0a0a0a" aria-label="Background colour">
+    <span style="font-size:13px;color:var(--text-secondary)">Ground</span><input type="color" id="c2" value="#0b0b0c" aria-label="Background colour">
     <span style="font-size:13px;color:var(--text-secondary)">Top</span><input type="color" id="c3" value="#f4f2ea" aria-label="Top text colour">
     <span style="font-size:13px;color:var(--text-secondary)">Title</span><input type="color" id="c4" value="#e01b1b" aria-label="Title colour">
   </div>
@@ -221,7 +235,7 @@ input[type=range]{height:20px}
     <span class="lvm" title="Input level"><i id="lvbar"></i></span>
     <span id="lstat" role="status" style="font-size:13px;color:var(--text-muted)">not listening</span>
   </div>
-  <div class="lsr" style="margin-top:8px"><span class="l">Sensitivity</span><input type="range" id="lgain" min="-2" max="2" step="0.05" value="0" aria-label="Input sensitivity"><span class="v" id="lgaino" style="min-width:52px">0 dB</span></div>
+  <div class="lsr" style="margin-top:8px"><span class="l">Sensitivity</span><input type="range" id="lgain" min="-2" max="4" step="0.05" value="1.5" aria-label="Input sensitivity"><span class="v" id="lgaino" style="min-width:52px">+9 dB</span></div>
   <div class="lsh">Response</div>
   <div class="lsc">
     <div class="lsr"><span class="l">Reaction</span><input type="range" id="mamt" min="0" max="1" step="0.01" value="0.7"><span class="v" id="mamto">70%</span></div>
@@ -318,8 +332,8 @@ function mkGeom(sd){var r=seed(sd),i,k,sl=[],dr=[],jg=[];
  return{sd:sd,SL:sl,DR:dr,JG:jg};}
 function build(sd){var g=mkGeom(sd);SEED=g.sd;SL=g.SL;DR=g.DR;JG=g.JG;}
 build(514422);
-/* The cover in DEF is one point in a wide space. Every load lands somewhere else
-   in it, so the page opens on a sun nobody has seen rather than the same still. */
+/* The cover in DEF is one point in a wide space. The page opens on that point;
+   Randomise lands anywhere else in the space below. */
 var WILD={speed:[1.3,2.4],spin:[0.05,0.3],flames:[7,22],length:[0.5,0.95],sharp:[0.35,0.9],
  branch:[0.25,0.95],jag:[0.2,0.85],sweep:[0.05,0.6],drops:[3,14],dsize:[0.2,0.6],
  sliver:[0.45,0.95],orbit:[0.15,0.6],ripple:[0.25,0.8],hole:[0.3,0.52],
@@ -527,7 +541,7 @@ var wctx=wcv.getContext('2d');
    the wall stays the sleeve's field of black. Only the lava changes, and mostly
    it does not. A tile can still be given its own ground by hand in the panel;
    randomising never does it. */
-var WALLGROUND='#0a0a0a';
+var WALLGROUND='#0b0b0c';
 var WALLAVA=['#f2d14b','#f2d14b','#f2d14b','#f2d14b','#f2d14b','#f2d14b','#f2d14b',
  '#ffb400','#f4f2ea','#ff5c2b','#7fd4ff','#00ff88','#e01b1b','#ff2e88','#f4f2ea'];
 function wildP(){var p={},k;
@@ -788,13 +802,15 @@ var MB={e:0,b:0,m:0,h:0,k:0,p:0.5};
 /* A live input fills the same MB a file does — see the live audio block below.
    Declared up here because midiLive() reads LIVEON and runs long before it. */
 var LIVEON=false,LKIND='',LSTREAM=null,LNODE=null,LANA=null,LBIN=null,LPREV=null,LIX=null;
-var LGAIN=1,LHOLD=false,LT=0,LLVL=0,LKE=0,LWARM=0,LMC=0,LFAV=0,LGEN=0;
+var LGAIN=Math.pow(2,1.5),LHOLD=false,LT=0,LLVL=0,LKE=0,LWARM=0,LMC=0,LFAV=0,LGEN=0;
 var LPK={e:0,b:0,m:0,h:0,k:0},LSM={e:0,b:0,m:0,h:0,k:0};
 /* Absolute floors, in mean linear magnitude per bin: below these the peak
    tracker refuses to climb down any further, which is what stops a silent room
    from being normalised into a performance. The upper bands sit lower because
-   music has less energy up there to begin with. */
-var LFLOOR={e:0.0018,b:0.0022,m:0.0014,h:0.0009,k:0.0006},LFALL=7;
+   music has less energy up there to begin with. Set low enough that a laptop
+   speaker across a room still reads as music; Sensitivity moves the signal
+   further against them, and opens at +9 dB for the same reason. */
+var LFLOOR={e:0.0009,b:0.0011,m:0.0007,h:0.00045,k:0.0003},LFALL=7;
 for(var qr=0;qr<keys.length;qr++){var er=document.getElementById(keys[qr]);
  RANGE[keys[qr]]=[parseFloat(er.min),parseFloat(er.max)];}
 function mel(id){return document.getElementById(id);}
@@ -1681,13 +1697,17 @@ document.getElementById('bshare').addEventListener('click',function(){
   navigator.clipboard.writeText(u).then(function(){say('link copied');},function(){say('copy blocked — the address bar has it');});
  else say('the address bar has the link');});
 window.addEventListener('hashchange',function(){applyState(location.hash);});
-document.getElementById('breset').addEventListener('click',function(){for(var i=0;i<keys.length;i++)document.getElementById(keys[i]).value=DEF[keys[i]];
- document.getElementById('c1').value='#f2d14b';document.getElementById('c2').value='#0a0a0a';document.getElementById('c3').value='#f4f2ea';document.getElementById('c4').value='#e01b1b';
- document.getElementById('ttop').value='КИНО';document.getElementById('tbot').value='ЗВЕЗДА\nПО ИМЕНИ\nСОЛНЦЕ';document.getElementById('tfont').value='Montserrat';
+/* Both the opening state and the Reset button land here. The page opens on the
+   sun alone — the type is the one thing you are expected to make your own, so it
+   starts empty and only Reset puts the album's own words back. */
+function cover(withType){for(var i=0;i<keys.length;i++)document.getElementById(keys[i]).value=DEF[keys[i]];
+ document.getElementById('c1').value='#f2d14b';document.getElementById('c2').value='#0b0b0c';document.getElementById('c3').value='#f4f2ea';document.getElementById('c4').value='#e01b1b';
+ document.getElementById('ttop').value=withType?'КИНО':'';document.getElementById('tbot').value=withType?'ЗВЕЗДА\nПО ИМЕНИ\nСОЛНЦЕ':'';document.getElementById('tfont').value='Montserrat';
  grad=false;wob=false;caps=true;dith=false;document.getElementById('bgrad').textContent='Gradient: off';document.getElementById('bwob').textContent='Liquid hole: off';document.getElementById('bcaps').textContent='Caps: on';document.getElementById('bdith').textContent='Dither: off';
- build(514422);sync();});
+ build(514422);sync();}
+document.getElementById('breset').addEventListener('click',function(){cover(true);});
 window.addEventListener('resize',function(){fit();if(wallOn)wallFit(false);});
-if(!applyState(location.hash))shuffle();
+if(!applyState(location.hash))cover(false);
 fit();requestAnimationFrame(frame);
 })();
 </script>
