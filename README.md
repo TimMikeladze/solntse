@@ -5,8 +5,9 @@
 An animated album-cover artwork generator: a procedural sun around a black circle, with editable
 heading and title text above and below it. Everything is drawn on a `<canvas>` at 60fps — the sun's
 flames, slivers and ripples are generated, so no two seeds look alike. Drop a MIDI file on the page
-and the sun beats to it. Export a still as SVG or PNG, or the animation as a GIF or a 60fps video —
-or drop the controls and fill the screen with a grid of suns.
+and the sun beats to it, or point it at a microphone or another browser tab and it beats to that.
+Export a still as SVG or PNG, or the animation as a GIF or a 60fps video — or drop the controls and
+fill the screen with a grid of suns.
 
 ![Solntse](screenshot.png)
 
@@ -143,7 +144,9 @@ one combination that never looks intentional.
 The file is parsed to notes in seconds and rendered once into an analysis buffer at 100 samples a
 second: overall energy, three pitch bands, a note-on pulse and a pitch centroid. Everything after
 that reads the buffer *by song time*, which is what makes a scrub and an export show the same sun as
-the live playback did.
+the live playback did. Those six numbers are the whole interface between a sound and the sun —
+[Live audio](#live-audio) fills the same six from a microphone or a tab, and the table below applies
+to it unchanged.
 
 Bands are split at the file's own pitch terciles rather than at fixed octaves, so a solo piano piece
 still has a low band to beat against and a bass line still has a top. Each band is normalised, with
@@ -160,11 +163,15 @@ a floor under the divisor so a band carrying almost nothing cannot be amplified 
 `Spin` and `Flow speed` are deliberately left out. Both multiply time inside `outerR`, so nudging
 either does not brighten the sun, it teleports the flames.
 
-- **Reaction** scales all of it, and at 0 the MIDI file changes nothing at all.
+Under **Response**:
+
+- **Reaction** scales all of it, and at 0 the music changes nothing at all.
 - **Note tail** is how long a released note keeps glowing — the buffer is rebuilt when you let go of
   the slider.
 - **Pulse** is the weight of the note-on hit against the sustained energy.
-- **Volume** is the synth, not the visualisation.
+- **MIDI volume** is the built-in synth, not the visualisation.
+
+The first three shape a live input just as they shape a file.
 
 The sliders themselves never move: the music bends a *copy* of them on the way into the renderer, so
 the sun you shaped is still the sun you get back when the file is cleared. The wall reads the same
@@ -189,6 +196,59 @@ Format 0, 1 and 2; running status; note-on at velocity zero as a note-off; mid-f
 SMPTE division as well as ticks per quarter note; notes left hanging at the end of a track. Channel
 10 is played as percussion — a filtered noise burst, since pitch there is which drum, not which note.
 A file it cannot read says so in the status line and leaves the sun you had alone.
+
+## Live audio
+
+The same six numbers a MIDI file produces can come off a live input instead. **Listen: mic** takes
+the microphone. **Listen: tab audio** takes another tab or window through the browser's share picker
+— pick a tab and tick *share tab audio*, and the sun beats to whatever is playing in it, with no room
+in front of it and no speakers feeding back into a microphone that is watching them. **Stop
+listening** hands the sun back to the sliders.
+
+Nothing is uploaded and nothing is stored: the spectrum is read once a frame and thrown away. The
+input is never connected to the output either — playing a microphone back through the speakers it is
+listening to is a howl, and a shared tab is already audible where it is.
+
+Only one source drives the sun at a time. Starting a live input pauses a loaded file; loading or
+playing a file stops listening. The driver table under [What listens to what](#what-listens-to-what)
+applies unchanged, and so do `Reaction`, `Note tail` and `Pulse` — for a live input `Note tail`
+becomes how long a sound keeps feeding the sun after it stops.
+
+### Earning the scale a file gets for free
+
+`analyse()` can normalise a file against the whole piece because it has the whole piece. A live
+signal has only what has already gone past, so each feature carries its own running peak: quick to
+rise, slow to fall (about seven seconds), and floored, so a silent room stays a still sun instead of
+being amplified into a performance. The peak climbs only part of the way toward a sudden jump, which
+leaves a transient room to land above it the way a note-on does in a file.
+
+| Feature | Taken from |
+| --- | --- |
+| Overall energy | mean magnitude across 30 Hz – 8 kHz |
+| Low / mid / high bands | 30–250 Hz, 250 Hz – 2 kHz, 2–8 kHz |
+| Note-on pulse | spectral flux, against its own running average |
+| Pitch centroid | amplitude-weighted centroid over log frequency |
+
+Magnitudes are taken as raw dB and undone by hand rather than read from the byte spectrum, which is
+already logarithmic and squashes exactly the dynamics this is trying to see. Flux counts only bins
+that got louder since the last frame, and only what rises well above the recent average: anything
+broadband and steady — room hiss, applause, a cymbal held open — pushes bins around every frame and
+would otherwise read as one long unbroken onset.
+
+**Sensitivity** does not make the sun bigger; the peak tracker would undo that within a second. It
+moves the signal against the fixed silence floor, which is the one number a running peak cannot work
+out for itself: it decides how quiet a thing still counts as music. The bar beside the buttons is the
+input level, so a dead input is visible rather than mysterious.
+
+### Live audio and export
+
+SVG and PNG take the sun as it stands. GIF encodes far slower than real time, so the features are
+frozen for the duration — otherwise a minute of room noise would be smeared across three seconds of
+animation — and the sun keeps turning on its own clock. Video records in real time and carries the
+live input as a real audio track, so a recorded tab share comes out as the music it was dancing to.
+
+A live input is not in the URL hash, for the same reason a MIDI file is not. Capturing audio needs a
+secure context: `https://`, or `localhost` while developing.
 
 ## Sharing
 
@@ -220,8 +280,13 @@ line and the title block independently.
 inner circle wobble instead of staying a perfect disc, `Dither` applies Floyd–Steinberg error
 diffusion when writing a GIF.
 
-**MIDI** — a loaded file, its transport, and `Reaction`, `Note tail`, `Pulse` and `Volume`. See
-[MIDI](#midi).
+**MIDI** — a loaded file and its transport. See [MIDI](#midi).
+
+**Live audio** — `Listen: mic`, `Listen: tab audio`, `Stop listening`, an input level bar and
+`Sensitivity`. See [Live audio](#live-audio).
+
+**Response** — `Reaction`, `Note tail` and `Pulse` shape whichever source is driving the sun;
+`MIDI volume` is the built-in synth only.
 
 **Colours** — lava, ground (background), top text, title.
 
@@ -300,8 +365,10 @@ reads, so a sun on the wall and a sun in the editor cannot drift apart.
 
 Randomness comes from a seeded PRNG (`seed()`), so a given seed always rebuilds the same geometry.
 
-A MIDI file joins at the same seam. `draw()` copies `P`, bends the copy through `midiMod()` and hands
-that to the renderer, so the wall, the SVG writer and all four exporters see modulated numbers and
-know nothing about MIDI. `MSET(songTime)` samples the analysis buffer once a frame rather than once a
-tile, and a scene's `paint(t, elapsed)` puts the playhead where it belongs for the frame being
-captured — which is the whole reason an export matches what was on screen.
+Sound joins at the same seam. `draw()` copies `P`, bends the copy through `midiMod()` and hands that
+to the renderer, so the wall, the SVG writer and all four exporters see modulated numbers and know
+nothing about where the music came from. Everything below that seam reads one six-slot struct, `MB`,
+and `srcSet()` is the only place that decides who fills it: `MSET(songTime)` samples the MIDI
+analysis buffer, or `liveTick()` reads the spectrum off a live input. Either way it happens once a
+frame rather than once a tile, and a scene's `paint(t, elapsed)` puts the playhead where it belongs
+for the frame being captured — which is the whole reason a MIDI export matches what was on screen.

@@ -32,7 +32,7 @@
 "isAccessibleForFree":true,
 "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},
 "about":{"@type":"MusicAlbum","name":"Звезда по имени Солнце","alternateName":"Zvezda po imeni Solntse","datePublished":"1989-08-29","byArtist":{"@type":"MusicGroup","name":"Кино","alternateName":"Kino","sameAs":"https://en.wikipedia.org/wiki/Kino_(band)"},"sameAs":"https://en.wikipedia.org/wiki/Zvezda_po_imeni_Solntse"},
-"featureList":["Generated sun artwork","Editable heading and title type","Shareable links that carry the whole artwork","Full-screen wall of many suns at once","Per-tile editing on the wall","MIDI file import","Music-driven animation","Built-in MIDI playback","SVG export","PNG export","Animated GIF export","60fps video export with sound","Wall export as image or animation"]}
+"featureList":["Generated sun artwork","Editable heading and title type","Shareable links that carry the whole artwork","Full-screen wall of many suns at once","Per-tile editing on the wall","MIDI file import","Live audio visualisation from microphone or browser tab","Music-driven animation","Built-in MIDI playback","SVG export","PNG export","Animated GIF export","60fps video export with sound","Wall export as image or animation"]}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -97,6 +97,8 @@ input[type=range]{height:20px}
 .lsb{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:10px}
 .lsb button{font-size:13px}
 .lsb input[type=color]{width:32px;height:26px;padding:0;border:0.5px solid var(--border);border-radius:6px;background:none;cursor:pointer}
+.lvm{display:inline-block;width:78px;height:8px;border-radius:4px;background:var(--border);overflow:hidden;vertical-align:middle}
+.lvm i{display:block;height:100%;width:0;background:var(--accent);transition:width .09s linear}
 .lsh{font-size:13px;color:var(--text-muted);margin:12px 0 2px;border-top:0.5px solid var(--border);padding-top:10px}
 /* A reroll within reach of the artwork itself: on a phone the Randomise button
    in the row below is off the bottom of the screen while you are looking at it. */
@@ -211,11 +213,21 @@ input[type=range]{height:20px}
     <span id="mstat" role="status" style="font-size:13px;color:var(--text-muted)">drop a .mid on the page, or load one</span>
   </div>
   <div class="lsr" style="margin-top:8px"><span class="l">Position</span><input type="range" id="mpos" min="0" max="1" step="0.0005" value="0" disabled aria-label="Playback position"><span class="v" id="mposo" style="min-width:86px;font-variant-numeric:tabular-nums">0:00 / 0:00</span></div>
+  <div class="lsh">Live audio</div>
+  <div class="lsb">
+    <button id="lmic" type="button"><i class="ti ti-microphone" style="font-size:16px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>Listen: mic</button>
+    <button id="ltab" type="button"><i class="ti ti-device-speaker" style="font-size:16px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>Listen: tab audio</button>
+    <button id="lstop" type="button" disabled>Stop listening</button>
+    <span class="lvm" title="Input level"><i id="lvbar"></i></span>
+    <span id="lstat" role="status" style="font-size:13px;color:var(--text-muted)">not listening</span>
+  </div>
+  <div class="lsr" style="margin-top:8px"><span class="l">Sensitivity</span><input type="range" id="lgain" min="-2" max="2" step="0.05" value="0" aria-label="Input sensitivity"><span class="v" id="lgaino" style="min-width:52px">0 dB</span></div>
+  <div class="lsh">Response</div>
   <div class="lsc">
     <div class="lsr"><span class="l">Reaction</span><input type="range" id="mamt" min="0" max="1" step="0.01" value="0.7"><span class="v" id="mamto">70%</span></div>
     <div class="lsr"><span class="l">Note tail</span><input type="range" id="mrel" min="0.05" max="1.5" step="0.05" value="0.35"><span class="v" id="mrelo">0.35s</span></div>
     <div class="lsr"><span class="l">Pulse</span><input type="range" id="mpulse" min="0" max="1" step="0.01" value="0.7"><span class="v" id="mpulseo">70%</span></div>
-    <div class="lsr"><span class="l">Volume</span><input type="range" id="mvol" min="0" max="1" step="0.01" value="0.6"><span class="v" id="mvolo">60%</span></div>
+    <div class="lsr"><span class="l">MIDI volume</span><input type="range" id="mvol" min="0" max="1" step="0.01" value="0.6"><span class="v" id="mvolo">60%</span></div>
   </div>
   <div class="lsh">Export</div>
   <div class="lsb">
@@ -495,7 +507,7 @@ function frame(now){var dt=Math.min(0.05,(now-t0)/1000);t0=now;
  /* The transport keeps running through a video capture — that one records in
     real time and the sound is going out with it. */
  midiTick(dt);
- if(!capturing){MSET(MPOS);if(wallOn)wallDraw();else draw(T);}
+ if(!capturing){srcSet(MPOS);if(wallOn)wallDraw();else draw(T);}
  requestAnimationFrame(frame);}
 
 /* ---------- wall: one independent sun per tile, filling the screen ---------- */
@@ -773,6 +785,16 @@ var MIDI=null,MNOTES=[],MDUR=0,MNAME='',MPOS=0,MPLAY=false,MHOLD=false,MNOW=0;
 var MAMT=0.7,MREL=0.35,MPULSE=0.7,MVOL=0.6,MLOOP=true,MSOUND=true,MCOL=true;
 var MIDION=false,MPUMP=0,MSC={},RANGE={},MA=null,AR=100;
 var MB={e:0,b:0,m:0,h:0,k:0,p:0.5};
+/* A live input fills the same MB a file does — see the live audio block below.
+   Declared up here because midiLive() reads LIVEON and runs long before it. */
+var LIVEON=false,LKIND='',LSTREAM=null,LNODE=null,LANA=null,LBIN=null,LPREV=null,LIX=null;
+var LGAIN=1,LHOLD=false,LT=0,LLVL=0,LKE=0,LWARM=0,LMC=0,LFAV=0,LGEN=0;
+var LPK={e:0,b:0,m:0,h:0,k:0},LSM={e:0,b:0,m:0,h:0,k:0};
+/* Absolute floors, in mean linear magnitude per bin: below these the peak
+   tracker refuses to climb down any further, which is what stops a silent room
+   from being normalised into a performance. The upper bands sit lower because
+   music has less energy up there to begin with. */
+var LFLOOR={e:0.0018,b:0.0022,m:0.0014,h:0.0009,k:0.0006},LFALL=7;
 for(var qr=0;qr<keys.length;qr++){var er=document.getElementById(keys[qr]);
  RANGE[keys[qr]]=[parseFloat(er.min),parseFloat(er.max)];}
 function mel(id){return document.getElementById(id);}
@@ -906,8 +928,13 @@ function midiMod(o){
  ad('drops',9*Math.min(1,MB.e));
  MPUMP=MCOL?Math.min(0.62,(0.45*K+0.14*MB.e)*A):0;}
 function midiLive(){
- MIDION=!!MA&&MAMT>0;
+ MIDION=(!!MA||LIVEON)&&MAMT>0;
  if(!MIDION)MPUMP=0;}
+/* One place decides where the six numbers come from, so the frame loop and all
+   three exporters stay ignorant of which source is feeding them. A file is
+   sampled at a song time; a live input has no song time and simply reports
+   whatever has just gone past the microphone. */
+function srcSet(st){if(LIVEON)liveTick();else MSET(st);}
 
 /* --- sound: a small synth, because a visualiser with nothing to hear is a
    slideshow. Notes are scheduled a little ahead of the audio clock rather than
@@ -1007,6 +1034,8 @@ function midiTick(dt){
  midiClock();}
 function midiPlay(){
  if(!MIDI||MPLAY)return;
+ /* Two sources bending the same six numbers would fight over every frame. */
+ if(LIVEON)liveStop('the file took the sun back');
  MPLAY=true;
  if(MPOS>=MDUR-0.02)MPOS=0;
  audioStart(MPOS);
@@ -1022,13 +1051,16 @@ function midiSeek(pos){
 /* PNG and GIF encode far slower than real time, so the transport is frozen for
    the duration rather than left to run on under them. Video records in real
    time and keeps playing. */
-function midiHold(){MHOLD=MPLAY;if(MPLAY)midiPause();}
-function midiRelease(){if(MHOLD){MHOLD=false;midiSeek(MPOS);midiPlay();}}
+function midiHold(){MHOLD=MPLAY;if(MPLAY)midiPause();LHOLD=LIVEON;}
+function midiRelease(){
+ LHOLD=false;LT=0;
+ if(MHOLD){MHOLD=false;midiSeek(MPOS);midiPlay();}}
 function midiLoad(buf,fname){
  var m;
  try{m=parseMIDI(buf);}
  catch(e){midiStat('could not read that file: '+e.message);return;}
  midiPause();
+ if(LIVEON)liveStop('the file took the sun back');
  MIDI=m;MNOTES=m.notes;MDUR=m.dur;MNAME=m.name||(fname||'').replace(/\.[^.]+$/,'');
  MPOS=0;analyse();midiLive();
  ['mplay','mstop','mclear','mpos'].forEach(function(id){mel(id).disabled=false;});
@@ -1095,6 +1127,187 @@ window.addEventListener('drop',function(e){
  var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
  if(f&&/\.midi?$/i.test(f.name))readFile(f);
  else if(f)midiStat('that is not a .mid file');});
+
+/* ---------- live audio: the same six numbers, taken off a live input ---------- */
+/* midiMod, the wall, the SVG writer and every exporter read MB and nothing
+   else, so a second source only has to fill the same six slots a MIDI file
+   fills. What a file gets for free and a live signal has to earn is scale:
+   analyse() normalises against the whole piece because it has the whole piece,
+   and a microphone has only what has already gone past. */
+function liveStat(m){mel('lstat').textContent=m;}
+function liveMeter(){mel('lvbar').style.width=Math.round(LLVL*100)+'%';}
+function liveUI(){
+ mel('lmic').disabled=LIVEON&&LKIND==='mic';
+ mel('ltab').disabled=(LIVEON&&LKIND==='tab')||!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia);
+ mel('lstop').disabled=!LIVEON;}
+/* Bin edges are worked out once per stream rather than once per frame: they
+   only move if the sample rate does, and a band that has collapsed to nothing
+   would divide by zero forty times a second. */
+function liveBins(){
+ var n=LANA.frequencyBinCount,hz=actx.sampleRate/LANA.fftSize;
+ function bi(f){return Math.max(1,Math.min(n-1,Math.round(f/hz)));}
+ var lo=bi(30),b1=bi(250),b2=bi(2000),hi=bi(8000);
+ if(b1<=lo)b1=lo+1;
+ if(b2<=b1)b2=b1+1;
+ if(hi<=b2)hi=b2+1;
+ LIX={lo:lo,b1:b1,b2:Math.min(n-2,b2),hi:Math.min(n-1,hi),hz:hz};
+ if(LIX.b2<=LIX.b1)LIX.b2=LIX.b1+1;
+ if(LIX.hi<=LIX.b2)LIX.hi=LIX.b2+1;}
+/* The running peak is what stands in for analyse()'s 95th percentile. It falls
+   away over seconds so a quiet passage after a loud one opens back up, and it
+   climbs only part of the way towards a sudden jump so a transient still lands
+   above one the way an onset does in a file. */
+function lpk(k,x,dt){
+ var q=LPK[k]*Math.exp(-dt/LFALL);
+ if(x>q)q+=(x-q)*0.35;
+ if(q<LFLOOR[k])q=LFLOOR[k];
+ LPK[k]=q;
+ return Math.min(1.4,x/q);}
+/* Instant attack, release off the Note tail slider: the same control that sets
+   how long a note keeps feeding the sun in a file sets how long a sound does
+   here, and without it the sun jitters at frame rate. */
+function lsm(k,x,dt){
+ var y=LSM[k];
+ y=x>=y?x:x+(y-x)*Math.exp(-dt/Math.max(0.04,MREL));
+ LSM[k]=y;return y;}
+function liveTick(){
+ if(!LIVEON||!LANA)return;
+ var now=performance.now()/1000,dt=LT?now-LT:1/60;LT=now;
+ if(!(dt>0))return;
+ if(dt>0.25)dt=0.25;
+ /* Held through a PNG or GIF encode: those run far slower than real time, so
+    letting the features run would smear a minute of room noise across three
+    seconds of animation. The sun keeps turning on its own clock instead. */
+ if(LHOLD)return;
+ LANA.getFloatFrequencyData(LBIN);
+ var lo=LIX.lo,b1=LIX.b1,b2=LIX.b2,hi=LIX.hi,hz=LIX.hz;
+ var g0=Math.log(55),gs=Math.log(6000)-g0;
+ var i,v,d,f,se=0,sb=0,sm=0,sh=0,fx=0,cen=0,wt=0;
+ for(i=lo;i<=hi;i++){
+  /* Byte spectrum data is already logarithmic and squashes the dynamics this
+     is trying to see, so the dB come back raw and are undone by hand. */
+  v=Math.pow(10,LBIN[i]/20)*LGAIN;
+  if(!(v>0))v=0;
+  se+=v;
+  if(i<=b1)sb+=v;else if(i<=b2)sm+=v;else sh+=v;
+  /* Spectral flux: bins that got louder since the last frame, and only those.
+     A held chord adds nothing to it, a struck one adds all of it — which is
+     what the note-on pulse means in a file. */
+  d=v-LPREV[i];if(d>0)fx+=d;LPREV[i]=v;
+  f=i*hz;
+  if(f>20){cen+=v*(Math.log(f)-g0)/gs;wt+=v;}}
+ /* Means, not sums, so the numbers do not move when the FFT size or the sample
+    rate does. */
+ se/=(hi-lo+1);sb/=(b1-lo+1);sm/=(b2-b1);sh/=(hi-b2);fx/=(hi-lo+1);
+ /* The peak tracker starts at the floor and the first frame of a loud room
+    would read far over it, so the first half second fades in rather than
+    slamming the sun open. */
+ LWARM=Math.min(1,LWARM+dt/0.6);
+ /* Flux is measured against its own running average rather than against zero.
+    Anything broadband and steady — room hiss, applause, a cymbal held open —
+    pushes bins around every frame and would otherwise read as one long
+    unbroken onset; only what rises well above what the signal has been doing
+    lately counts as a hit. */
+ LFAV+=(fx-LFAV)*(1-Math.exp(-dt/1.1));
+ var fon=fx-LFAV*1.4;
+ if(fon<0)fon=0;
+ /* The onset lobe keeps its own short decay: a beat should land and be gone,
+    not ride out on the release the sustained bands use. */
+ LKE=Math.max(lpk('k',fon,dt),LKE*Math.exp(-dt/0.075));
+ MB.e=lsm('e',lpk('e',se,dt),dt)*LWARM;
+ MB.b=lsm('b',lpk('b',sb,dt),dt)*LWARM;
+ MB.m=lsm('m',lpk('m',sm,dt),dt)*LWARM;
+ MB.h=lsm('h',lpk('h',sh,dt),dt)*LWARM;
+ MB.k=LKE*LWARM;
+ /* Amplitude-weighted centroid over log frequency, which is the nearest thing
+    a spectrum has to the pitch centroid analyse() takes from note numbers. */
+ MB.p=wt>0?Math.max(0,Math.min(1,cen/wt)):0.5;
+ var db=se>1e-9?20*Math.log(se)/Math.LN10:-120;
+ LLVL=Math.max(0,Math.min(1,(db+78)/58));
+ if(((LMC++)&3)===0)liveMeter();}
+function liveStop(msg){
+ /* Bumped so a permission dialog still sitting open, or a share picker the user
+    is halfway through, cannot hand back a stream that nobody wants any more. */
+ LGEN++;
+ if(LNODE){try{LNODE.disconnect();}catch(e){}}
+ if(LSTREAM)LSTREAM.getTracks().forEach(function(t){try{t.stop();}catch(e){}});
+ LNODE=null;LSTREAM=null;LANA=null;LBIN=null;LPREV=null;LIX=null;
+ LIVEON=false;LKIND='';LHOLD=false;LT=0;LKE=0;LWARM=0;LLVL=0;LFAV=0;
+ for(var k in LPK){LPK[k]=0;LSM[k]=0;}
+ MB.e=MB.b=MB.m=MB.h=MB.k=0;MB.p=0.5;MPUMP=0;
+ midiLive();liveUI();liveMeter();
+ liveStat(msg||'not listening');}
+/* A tab share is the better input of the two and costs nothing extra: the sound
+   arrives without a room in front of it and without the speakers feeding back
+   into the microphone that is watching them. */
+function liveStart(kind){
+ if(!window.isSecureContext){liveStat('capturing audio needs https');return;}
+ var md=navigator.mediaDevices;
+ if(!md||!md.getUserMedia){liveStat('this browser cannot capture audio');return;}
+ if(kind==='tab'&&!md.getDisplayMedia){liveStat('this browser cannot capture tab audio');return;}
+ if(!audioInit()){liveStat('this browser has no audio engine');return;}
+ liveStop('starting…');
+ midiPause();
+ var gen=LGEN;
+ var raw={echoCancellation:false,noiseSuppression:false,autoGainControl:false};
+ var ask=kind==='tab'
+  ?md.getDisplayMedia({video:true,audio:raw})
+  :md.getUserMedia({audio:raw});
+ ask.then(function(st){
+  /* Two clicks in a row leave two pickers in flight; only the last one counts,
+     and the loser has to be shut down or it keeps the tab's recording
+     indicator lit for the rest of the session. */
+  if(gen!==LGEN){st.getTracks().forEach(function(t){try{t.stop();}catch(e){}});return;}
+  var at=st.getAudioTracks()[0];
+  if(!at){
+   st.getTracks().forEach(function(t){t.stop();});
+   liveStat(kind==='tab'
+    ?'that share carried no sound — pick a tab and tick “share tab audio”'
+    :'that input carried no sound');
+   return;}
+  /* A tab share hands back a video track as well, and nothing here looks at
+     pictures — left running it would keep a whole screen encoder alive. */
+  st.getVideoTracks().forEach(function(t){t.stop();
+   try{st.removeTrack(t);}catch(e){}});
+  if(actx.state==='suspended')actx.resume();
+  LSTREAM=st;LKIND=kind;
+  LNODE=actx.createMediaStreamSource(st);
+  LANA=actx.createAnalyser();
+  LANA.fftSize=2048;
+  /* Light smoothing only: the analyser's own averaging is applied before the
+     flux is taken, and too much of it files the edge off every onset. */
+  LANA.smoothingTimeConstant=0.25;
+  LNODE.connect(LANA);
+  /* Deliberately not connected to the destination. Playing a microphone back
+     through the speakers it is listening to is a howl, and a shared tab is
+     already audible where it is. */
+  LBIN=new Float32Array(LANA.frequencyBinCount);
+  LPREV=new Float32Array(LANA.frequencyBinCount);
+  liveBins();
+  LIVEON=true;LT=0;LWARM=0;LFAV=0;
+  at.addEventListener('ended',function(){if(LIVEON&&gen===LGEN)liveStop('that input stopped');});
+  /* Something is playing now: a frozen sun would be the wrong answer to it. */
+  if(paused)mel('bpause').click();
+  midiLive();liveUI();
+  liveStat((kind==='tab'?'listening to a tab':'listening to the microphone')+
+   (at.label?' · '+at.label:'')+' · '+Math.round(actx.sampleRate/1000)+'kHz');},
+ function(e){
+  if(gen!==LGEN)return;
+  var n=e&&e.name;
+  liveStat(n==='NotAllowedError'?'permission refused'
+   :n==='NotFoundError'?'no audio input found'
+   :'could not open that input'+(e&&e.message?': '+e.message:''));});}
+mel('lmic').addEventListener('click',function(){audioUnlock();liveStart('mic');});
+mel('ltab').addEventListener('click',function(){audioUnlock();liveStart('tab');});
+mel('lstop').addEventListener('click',function(){liveStop();});
+/* Sensitivity does not make the sun bigger — the peak tracker would undo that
+   within a second. It moves the signal against the fixed silence floor, which
+   is the one number a running peak cannot work out for itself: it decides how
+   quiet a thing still counts as music. */
+mel('lgain').addEventListener('input',function(){
+ var v=parseFloat(this.value);LGAIN=Math.pow(2,v);
+ mel('lgaino').textContent=(v>0?'+':'')+(v*6).toFixed(0)+' dB';});
+liveUI();
 
 /* ---------- export ---------- */
 function xmlEsc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -1298,8 +1511,8 @@ function sunScene(w){var h=null,mt0=0;
   now:function(){return T;},
   at:function(s,el){return s+el*P.speed;},
   begin:function(){mt0=MPOS;h=useCanvas(w);return h.c;},
-  paint:function(t,el){MSET(mt0+(el||0));draw(t);},
-  end:function(){if(h)h.restore();h=null;MSET(MPOS);},
+  paint:function(t,el){srcSet(mt0+(el||0));draw(t);},
+  end:function(){if(h)h.restore();h=null;srcSet(MPOS);},
   name:function(){return fileBase();}};}
 function wallScene(width){
  /* Sized off whole tiles so an export is the grid exactly, never a part row,
@@ -1312,8 +1525,8 @@ function wallScene(width){
   at:function(s,el){return s+el;},
   begin:function(){mt0=MPOS;oc=document.createElement('canvas');oc.width=W;oc.height=H;
    og=oc.getContext('2d',{willReadFrequently:true});return oc;},
-  paint:function(t,el){MSET(mt0+(el||0));wallPaint(oc,og,t,1);},
-  end:function(){oc=null;og=null;MSET(MPOS);},
+  paint:function(t,el){srcSet(mt0+(el||0));wallPaint(oc,og,t,1);},
+  end:function(){oc=null;og=null;srcSet(MPOS);},
   name:function(){return 'solntse-wall-'+wallCols+'x'+wallRows;}};}
 function g2d(c){return c.getContext('2d',{willReadFrequently:true});}
 
@@ -1381,8 +1594,11 @@ function exportVideo(mk,o,out){
  /* Video is the one export that runs in real time, which is exactly what a
     synth needs — so when a MIDI file is loaded and audible the clip carries the
     music as a real audio track, and the sun in it is dancing to the sound in it. */
- var withAudio=false;
- if(MIDI&&MSOUND){audioUnlock();withAudio=!!(actx&&mdest);}
+ /* A live input is already a real audio track, so the clip can simply carry
+    it — a recorded tab share comes out as the music it was dancing to. */
+ var withAudio=false,liveTrk=null;
+ if(LIVEON&&MSOUND&&LSTREAM){liveTrk=LSTREAM.getAudioTracks()[0]||null;withAudio=!!liveTrk;}
+ else if(MIDI&&MSOUND){audioUnlock();withAudio=!!(actx&&mdest);}
  var mime=videoMime(withAudio);
  if(!mime){out('this browser cannot record video');return;}
  if(document.hidden){out('keep this tab visible — video records in real time');return;}
@@ -1397,8 +1613,8 @@ function exportVideo(mk,o,out){
    sc.paint(startT,0);
    var stream=lc.captureStream(0),track=stream.getVideoTracks()[0];
    if(withAudio){
-    midiPause();midiSeek(startMT);midiPlay();
-    var at=mdest.stream.getAudioTracks()[0];
+    var at=liveTrk;
+    if(!at){midiPause();midiSeek(startMT);midiPlay();at=mdest.stream.getAudioTracks()[0];}
     if(at)stream.addTrack(at);else withAudio=false;}
    var rec=new MediaRecorder(stream,{mimeType:mime,
     audioBitsPerSecond:160000,
