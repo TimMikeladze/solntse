@@ -14,7 +14,7 @@ import {join} from 'node:path';
 const OUT = 'dist';
 /* Everything that is part of the site ships; everything that only builds or
    documents it does not. New assets are picked up without editing this list. */
-const SKIP = new Set([OUT, 'node_modules', 'build.mjs', 'vercel.json', 'README.md', 'screenshot.png']);
+const SKIP = new Set([OUT, 'node_modules', 'build.mjs', 'icons.mjs', 'vercel.json', 'README.md', 'screenshot.png']);
 const MARK = '<!--analytics-->';
 
 rmSync(OUT, {recursive: true, force: true});
