@@ -38,6 +38,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Oswald:wght@700&family=PT+Sans+Narrow:wght@700&family=Roboto+Condensed:wght@700&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<!-- The deploy pastes an analytics tag here when it has one to paste; see
+     build.mjs. Nothing is loaded and nothing is counted without it. -->
+<!--analytics-->
 <style>
 :root{
   --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -312,6 +315,12 @@ input[type=range]{height:20px}
 </div>
 <script>
 (function(){
+/* Analytics are optional and usually absent: the tag is only in the page on a
+   deploy that was given a website id, so every call has to survive umami not
+   being there at all. Which of the things you can do here people actually do is
+   worth knowing; what any one person did is not, so nothing here carries the
+   artwork, the type or the file name. */
+function track(name,data){try{if(window.umami)window.umami.track(name,data);}catch(e){}}
 var cv=document.getElementById('lavasun'),ctx=cv.getContext('2d'),TAU=Math.PI*2;
 var DPR=Math.min(window.devicePixelRatio||1,2),S=0,cx=0,cy=0,paused=false,grad=false,wob=false,caps=true;
 var capturing=false,dith=false;
@@ -749,7 +758,7 @@ function adopt(c){var i;
  document.getElementById('bwob').textContent='Liquid hole: '+(wob?'on':'off');
  SEED=c.seed;SL=c.sl;DR=c.dr;JG=c.jg;
  sync();}
-document.getElementById('bwall').addEventListener('click',wallOpen);
+document.getElementById('bwall').addEventListener('click',function(){track('wall-open');wallOpen();});
 document.getElementById('wclose').addEventListener('click',wallClose);
 document.getElementById('wrand').addEventListener('click',function(){editClose();wallFit(true);barPoke();});
 document.getElementById('wless').addEventListener('click',function(){wallGrid(wallCols-1,null);barPoke();});
@@ -1080,6 +1089,7 @@ function midiLoad(buf,fname){
  if(LIVEON)liveStop('the file took the sun back');
  MIDI=m;MNOTES=m.notes;MDUR=m.dur;MNAME=m.name||(fname||'').replace(/\.[^.]+$/,'');
  MPOS=0;analyse();midiLive();
+ track('midi-load',{notes:MNOTES.length});
  ['mplay','mstop','mclear','mpos'].forEach(function(id){mel(id).disabled=false;});
  midiStat((MNAME?MNAME+' · ':'')+MNOTES.length+' notes · '+fmtT(MDUR));
  /* A file was just handed over: it plays. A frozen sun would be the wrong
@@ -1287,6 +1297,7 @@ function liveStart(kind){
   st.getVideoTracks().forEach(function(t){t.stop();
    try{st.removeTrack(t);}catch(e){}});
   if(actx.state==='suspended')actx.resume();
+  track('live-audio',{source:kind});
   LSTREAM=st;LKIND=kind;
   LNODE=actx.createMediaStreamSource(st);
   LANA=actx.createAnalyser();
@@ -1523,6 +1534,7 @@ function useCanvas(w){
 /* paint() takes the elapsed seconds alongside the sun's own time so the MIDI
    playhead can be put exactly where it was that far into the capture — an
    export is then the same frames whether it encodes in real time or not. */
+function sceneName(mk){return mk===wallScene?'wall':'sun';}
 function sunScene(w){var h=null,mt0=0;
  return{w:w,h:w,
   now:function(){return T;},
@@ -1549,6 +1561,7 @@ function g2d(c){return c.getContext('2d',{willReadFrequently:true});}
 
 function exportPNG(mk,o,out){
  if(busy)return;
+ track('export',{format:'png',of:sceneName(mk),size:o.size});
  var sc=mk(o.size);setBusy(true);capturing=true;midiHold();
  try{
   var c=sc.begin();
@@ -1560,6 +1573,7 @@ function exportPNG(mk,o,out){
 
 function exportGIF(mk,o,out){
  if(busy)return;
+ track('export',{format:'gif',of:sceneName(mk),size:o.size});
  var delayCs=Math.max(2,Math.round(100/o.fps)),fps=100/delayCs;
  var count=Math.max(2,Math.min(600,Math.round(o.secs*fps)));
  var sc=mk(o.size),startT=sc.now(),W=sc.w,H=sc.h,px=W*H;
@@ -1608,6 +1622,7 @@ function videoMime(withAudio){
  return null;}
 function exportVideo(mk,o,out){
  if(busy)return;
+ track('export',{format:'video',of:sceneName(mk),size:o.size});
  /* Video is the one export that runs in real time, which is exactly what a
     synth needs — so when a MIDI file is loaded and audible the clip carries the
     music as a real audio track, and the sun in it is dancing to the sound in it. */
@@ -1667,6 +1682,7 @@ function exportVideo(mk,o,out){
 
 document.getElementById('bsvg').addEventListener('click',function(){
  if(busy)return;
+ track('export',{format:'svg',of:'sun'});
  download(new Blob([toSVG(T)],{type:'image/svg+xml'}),fileBase()+'.svg');say('SVG saved');});
 document.getElementById('bpng').addEventListener('click',function(){exportPNG(sunScene,opts(),say);});
 document.getElementById('bgif').addEventListener('click',function(){exportGIF(sunScene,opts(),say);});
@@ -1693,6 +1709,7 @@ document.getElementById('bwob').addEventListener('click',function(){wob=!wob;thi
  document.getElementById(id).addEventListener('change',pushURL);});
 document.getElementById('bshare').addEventListener('click',function(){
  var u=shareURL();
+ track('share');
  try{history.replaceState(null,'','#'+stateStr());}catch(e){}
  if(navigator.clipboard&&navigator.clipboard.writeText)
   navigator.clipboard.writeText(u).then(function(){say('link copied');},function(){say('copy blocked — the address bar has it');});

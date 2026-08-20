@@ -354,6 +354,49 @@ python3 -m http.server 8000
 
 Opening `index.html` directly from the filesystem works too.
 
+## Analytics
+
+Optional, and off unless the deploy is given a website id. Nothing is loaded and nothing is
+counted without one, so a local copy, a fork and a preview all run untracked.
+
+[Umami](https://umami.is) is self-hosted and cookieless. The tag cannot live in `index.html`,
+because an id belongs in the environment rather than in the repository and a static host cannot
+read the environment while serving a file. So `build.mjs` copies the site into `dist/` and pastes
+the tag in on the way past — the only reason a build step exists here at all. It is 40 lines of
+`node:fs` with no dependencies, and it runs on the deploy, never locally.
+
+| Variable | | |
+| --- | --- | --- |
+| `UMAMI_WEBSITE_ID` | required | the id of the site in your umami dashboard. Unset means no analytics. |
+| `UMAMI_SCRIPT_URL` | optional | tracker URL. Defaults to `https://linesofcode-umami.vercel.app/script.js`. |
+| `UMAMI_HOST_URL` | optional | where events are sent, if that is not where the script came from. |
+| `UMAMI_DOMAINS` | optional | comma-separated hostnames to count, so a fork's traffic does not land in your dashboard. |
+
+On Vercel: set them on the project, then redeploy.
+
+```bash
+vercel env add UMAMI_WEBSITE_ID production
+```
+
+The tag ships with `data-exclude-hash="true"`, and that is not cosmetic. The whole artwork lives in
+the hash and gets rewritten about twice a second while a slider is moving; umami hooks
+`replaceState`, so without it a single drag would read as a few hundred page views. Stripped of the
+hash the URL never changes and the tracker stays quiet.
+
+Beyond page views, `track()` reports which of the things you can do here people actually do:
+
+| Event | Fires when |
+| --- | --- |
+| `export` | an export starts — `format` is `svg`, `png`, `gif` or `video`, `of` is `sun` or `wall`, with the pixel `size` |
+| `share` | the Share button copies a link |
+| `wall-open` | the wall is opened |
+| `midi-load` | a `.mid` parses, with its note count |
+| `live-audio` | a live input opens, `source` being `mic` or `tab` |
+
+Each fires after the thing it names has actually happened, so a click that hit a busy exporter, a
+file that would not parse and a refused microphone all count as nothing. None of them carry the
+artwork, the type, the file name or the link — only that the feature was used.
+
 ## How it works
 
 `outerR(theta, t)` returns the sun's radius at a given angle and time. It sums:
