@@ -4,3 +4,4 @@
 *.swo
 .env*
 dist
+node_modules

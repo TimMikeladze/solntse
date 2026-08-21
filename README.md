@@ -250,10 +250,12 @@ would otherwise read as one long unbroken onset.
 
 **Sensitivity** does not make the sun bigger; the peak tracker would undo that within a second. It
 moves the signal against the fixed silence floor, which is the one number a running peak cannot work
-out for itself: it decides how quiet a thing still counts as music. It runs from -12 dB to +24 dB and
-opens at +9 dB, which is enough for a laptop speaker across a room; the floors themselves are set low
-for the same reason. The bar beside the buttons is the input level, so a dead input is visible rather
-than mysterious.
+out for itself: it decides how quiet a thing still counts as music. It runs from -12 dB to +36 dB and
+opens wide open, at the top: a microphone is usually hearing a room from across it, and that wants
+all the sensitivity there is, so speech, a phone on the desk or music two rooms away drives the sun
+without anybody having to find the slider first. Turn it down for a loud room. The floors themselves
+are set low for the same reason. The bar beside the buttons is the input level as the sun hears it,
+Sensitivity included, so a dead input is visible rather than mysterious.
 
 ### Live audio and export
 
@@ -353,6 +355,28 @@ python3 -m http.server 8000
 ```
 
 Opening `index.html` directly from the filesystem works too.
+
+## Link preview art
+
+`og.png`, `favicon.png` and `apple-touch-icon.png` are drawn by the page itself rather than by hand,
+so they cannot drift away from what the site renders. `icons.mjs` opens `index.html` in a headless
+browser, turns the controls to what each image wants, and takes the sun off the canvas the page has
+already painted.
+
+```bash
+npm i playwright && node icons.mjs
+```
+
+The site has no dependencies and this is not one: the script is run by hand, on the rare day the
+icons change, and `build.mjs` never ships it.
+
+What it pins is the centre. A favicon is a 16-pixel circle beside a link, and a sun sitting a few
+percent off in it reads as a mistake rather than as composition — so `Sun offset` goes to zero, which
+puts the hole exactly on the middle of the square canvas, and each image is then placed by the sun's
+own measured reach rather than by a guessed scale. The hole lands on the middle of the file every
+time. The two icons also drop the slivers, which at 16 pixels are not slivers but a dirty screen, and
+`Speed` goes to zero before the artwork is reloaded, so the frame is `t=0` and a second run gives the
+same pixels as the first.
 
 ## Analytics
 

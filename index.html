@@ -239,7 +239,7 @@ input[type=range]{height:20px}
     <span class="lvm" title="Input level"><i id="lvbar"></i></span>
     <span id="lstat" role="status" style="font-size:13px;color:var(--text-muted)">not listening</span>
   </div>
-  <div class="lsr" style="margin-top:8px"><span class="l">Sensitivity</span><input type="range" id="lgain" min="-2" max="4" step="0.05" value="1.5" aria-label="Input sensitivity"><span class="v" id="lgaino" style="min-width:52px">+9 dB</span></div>
+  <div class="lsr" style="margin-top:8px"><span class="l">Sensitivity</span><input type="range" id="lgain" min="-2" max="6" step="0.05" value="6" aria-label="Input sensitivity"><span class="v" id="lgaino" style="min-width:52px">+36 dB</span></div>
   <div class="lsh">Response</div>
   <div class="lsc">
     <div class="lsr"><span class="l">Reaction</span><input type="range" id="mamt" min="0" max="1" step="0.01" value="0.7"><span class="v" id="mamto">70%</span></div>
@@ -812,14 +812,16 @@ var MB={e:0,b:0,m:0,h:0,k:0,p:0.5};
 /* A live input fills the same MB a file does — see the live audio block below.
    Declared up here because midiLive() reads LIVEON and runs long before it. */
 var LIVEON=false,LKIND='',LSTREAM=null,LNODE=null,LANA=null,LBIN=null,LPREV=null,LIX=null;
-var LGAIN=Math.pow(2,1.5),LHOLD=false,LT=0,LLVL=0,LKE=0,LWARM=0,LMC=0,LFAV=0,LGEN=0;
+var LGAIN=Math.pow(2,6),LHOLD=false,LT=0,LLVL=0,LKE=0,LWARM=0,LMC=0,LFAV=0,LGEN=0;
 var LPK={e:0,b:0,m:0,h:0,k:0},LSM={e:0,b:0,m:0,h:0,k:0};
 /* Absolute floors, in mean linear magnitude per bin: below these the peak
    tracker refuses to climb down any further, which is what stops a silent room
    from being normalised into a performance. The upper bands sit lower because
    music has less energy up there to begin with. Set low enough that a laptop
    speaker across a room still reads as music; Sensitivity moves the signal
-   further against them, and opens at +9 dB for the same reason. */
+   further against them, and opens at the top of its range for the same reason:
+   a microphone hearing a room from across it needs all of it, and nobody should
+   have to find a slider before the sun moves. */
 var LFLOOR={e:0.0009,b:0.0011,m:0.0007,h:0.00045,k:0.0003},LFALL=7;
 for(var qr=0;qr<keys.length;qr++){var er=document.getElementById(keys[qr]);
  RANGE[keys[qr]]=[parseFloat(er.min),parseFloat(er.max)];}
@@ -1331,7 +1333,9 @@ mel('lstop').addEventListener('click',function(){liveStop();});
 /* Sensitivity does not make the sun bigger — the peak tracker would undo that
    within a second. It moves the signal against the fixed silence floor, which
    is the one number a running peak cannot work out for itself: it decides how
-   quiet a thing still counts as music. */
+   quiet a thing still counts as music. It opens at the top of its range: the
+   common case is a microphone hearing a room from across it, and that wants all
+   the sensitivity there is. Turning it down is for the rare loud one. */
 mel('lgain').addEventListener('input',function(){
  var v=parseFloat(this.value);LGAIN=Math.pow(2,v);
  mel('lgaino').textContent=(v>0?'+':'')+(v*6).toFixed(0)+' dB';});
